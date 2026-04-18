@@ -45,6 +45,58 @@ Este documento contém **todos os requisitos de teste**:
 - As especificações de teste são obrigatórias - **siga exatamente**
 - O sucesso do projeto depende de seguir as diretrizes dos PDFs
 
+## Estrutura MVC
+
+### Pacotes Criados
+```
+src/main/java/com/fiap/begin_projetct/
+├── controller/     # Camada de apresentação (Controllers REST)
+├── service/        # Camada de lógica de negócio (Services)
+├── repository/     # Camada de acesso a dados (Repositories)
+├── model/          # Camada de modelo de dados (Entities)
+└── BeginProjetctApplication.java
+```
+
+### Exemplo de Implementação
+
+#### Model (Paciente.java)
+- Entidade JPA para representar pacientes
+- Mapeamento para tabela `pacientes`
+- Anotações Lombok para redução de código boilerplate
+
+#### Repository (PacienteRepository.java)
+- Interface extending JpaRepository
+- Métodos personalizados para busca por CPF e e-mail
+- Validação de existência de registros
+
+#### Service (PacienteService.java)
+- Lógica de negócio para gestão de pacientes
+- Validações de regras de negócio
+- Operações CRUD completas
+
+#### Controller (PacienteController.java)
+- Endpoints REST para API de pacientes
+- Operações: GET, POST, PUT, DELETE
+- Tratamento de respostas HTTP adequadas
+
+### Endpoints da API
+
+#### Pacientes
+- `GET /api/pacientes` - Listar todos os pacientes
+- `GET /api/pacientes/{id}` - Buscar paciente por ID
+- `GET /api/pacientes/cpf/{cpf}` - Buscar paciente por CPF
+- `POST /api/pacientes` - Criar novo paciente
+- `PUT /api/pacientes/{id}` - Atualizar paciente
+- `DELETE /api/pacientes/{id}` - Deletar paciente
+
+## Configuração do Banco de Dados
+
+### MySQL
+- **Banco**: care_plus_db
+- **Porta**: 3306
+- **URL**: jdbc:mysql://localhost:3306/care_plus_db
+- **DDL Auto**: update (cria/atualiza tabelas automaticamente)
+
 ## Arquivos do Projeto
 - `Requisitos e regras sprint01.pdf` - **DOCUMENTO DE REQUISITOS**
 - `Sprint01_Testing.pdf` - **DOCUMENTO DE TESTES**
