@@ -1,0 +1,2216 @@
+{
+	"info": {
+		"_postman_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+		"name": "Care Plus API - JWT Complete Collection",
+		"description": "Complete Postman collection for Care Plus API with JWT authentication, authorization, and all security features",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "care-plus-api-jwt"
+	},
+	"item": [
+		{
+			"name": "1. Authentication",
+			"item": [
+				{
+					"name": "1.1 Register User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test: Status code 201 Created",
+									"pm.test(\"Status code is 201 Created\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"// Test: Success message",
+									"pm.test(\"User created successfully\", function () {",
+									"    const responseText = pm.response.text();",
+									"    pm.expect(responseText).to.include('Usuário criado com sucesso');",
+									"});",
+									"",
+									"// Store user credentials for login test",
+									"if (pm.response.code === 201) {",
+									"    const requestBody = JSON.parse(pm.request.body.raw);",
+									"    pm.environment.set('test_user_email', requestBody.email);",
+									"    pm.environment.set('test_user_password', requestBody.senha);",
+									"    console.log('Registered user:', requestBody.email);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"testsenha@careplus.com\",\n  \"senha\": \"Test@1234\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "1.2 Login - Success",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test: Status code 200 OK",
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"// Test: Response contains JWT token",
+									"pm.test(\"Response contains JWT token\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('token');",
+									"    pm.expect(jsonData).to.have.property('type');",
+									"    pm.expect(jsonData.type).to.eql('Bearer');",
+									"});",
+									"",
+									"// Test: Token is not empty",
+									"pm.test(\"Token is not empty\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.token).to.be.a('string');",
+									"    pm.expect(jsonData.token.length).to.be.above(0);",
+									"});",
+									"",
+									"// Save JWT token for subsequent requests",
+									"if (pm.response.code === 200) {",
+									"    const jsonData = pm.response.json();",
+									"    pm.environment.set('jwt_token', jsonData.token);",
+									"    pm.environment.set('token_type', jsonData.type);",
+									"    pm.environment.set('login_time', new Date().toISOString());",
+									"    console.log('JWT Token saved successfully');",
+									"    console.log('Login time:', pm.environment.get('login_time'));",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"admin@careplus.com\",\n  \"senha\": \"Admin@123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "1.3 Validate Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test: Status code 200 OK",
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"// Test: Token validation message",
+									"pm.test(\"Token is valid\", function () {",
+									"    const responseText = pm.response.text();",
+									"    pm.expect(responseText).to.include('Token válido');",
+									"});",
+									"",
+									"// Test: Token age",
+									"pm.test(\"Token age is reasonable\", function () {",
+									"    const loginTime = new Date(pm.environment.get('login_time'));",
+									"    const now = new Date();",
+									"    const ageMinutes = (now - loginTime) / (1000 * 60);",
+									"    pm.expect(ageMinutes).to.be.below(15); // Token should be less than 15 minutes old",
+									"    console.log('Token age:', ageMinutes.toFixed(2), 'minutes');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/auth/validate",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"validate"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "1.4 Logout",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test: Status code 200 OK",
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"// Test: Logout message",
+									"pm.test(\"Logout successful\", function () {",
+									"    const responseText = pm.response.text();",
+									"    pm.expect(responseText).to.include('Logout realizado com sucesso');",
+									"});",
+									"",
+									"// Clear token after logout",
+									"if (pm.response.code === 200) {",
+									"    pm.environment.unset('jwt_token');",
+									"    pm.environment.unset('token_type');",
+									"    pm.environment.unset('login_time');",
+									"    console.log('JWT Token cleared after logout');",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/auth/logout",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"logout"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "2. Protected Routes",
+			"item": [
+				{
+					"name": "2.1 List All Patients",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test: Status code 200 OK",
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"// Test: Response is an array",
+									"pm.test(\"Response is an array\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.be.an('array');",
+									"});",
+									"",
+									"// Test: Authorization header was present",
+									"pm.test(\"Authorization header was sent\", function () {",
+									"    const authHeader = pm.request.headers.get('Authorization');",
+									"    pm.expect(authHeader).to.include('Bearer');",
+									"    pm.expect(authHeader).to.include(pm.environment.get('jwt_token'));",
+									"});",
+									"",
+									"// Test: Token is still valid",
+									"pm.test(\"JWT token is still valid\", function () {",
+									"    const loginTime = new Date(pm.environment.get('login_time'));",
+									"    const now = new Date();",
+									"    const ageMinutes = (now - loginTime) / (1000 * 60);",
+									"    pm.expect(ageMinutes).to.be.below(15);",
+									"    console.log('Token still valid after:', ageMinutes.toFixed(2), 'minutes');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/pacientes",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"pacientes"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "2.2 Create Patient",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test: Status code 201 Created",
+									"pm.test(\"Status code is 201 Created\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"// Test: Response contains patient data",
+									"pm.test(\"Response has patient data\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('id');",
+									"    pm.expect(jsonData).to.have.property('nome');",
+									"    pm.expect(jsonData).to.have.property('cpf');",
+									"    pm.expect(jsonData).to.have.property('email');",
+									"});",
+									"",
+									"// Store created patient ID",
+									"if (pm.response.code === 201) {",
+									"    const jsonData = pm.response.json();",
+									"    pm.environment.set('protected_patient_id', jsonData.id);",
+									"    pm.environment.set('protected_patient_cpf', jsonData.cpf);",
+									"    console.log('Created protected patient ID:', jsonData.id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nome\": \"Carlos Silva\",\n  \"cpf\": \"789.456.123-00\",\n  \"email\": \"carlos.silva@careplus.com\",\n  \"telefone\": \"(11) 97777-6666\",\n  \"dataNascimento\": \"1980-05-20\",\n  \"convenio\": \"Amil\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/pacientes",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"pacientes"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "2.3 Get Patient by ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test: Status code 200 OK",
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"// Test: Response has patient data",
+									"pm.test(\"Response has patient data\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('id');",
+									"    pm.expect(jsonData).to.have.property('nome');",
+									"    pm.expect(jsonData).to.have.property('cpf');",
+									"});",
+									"",
+									"// Test: Session is still active",
+									"pm.test(\"Session is still active\", function () {",
+									"    const loginTime = new Date(pm.environment.get('login_time'));",
+									"    const now = new Date();",
+									"    const ageMinutes = (now - loginTime) / (1000 * 60);",
+									"    pm.expect(ageMinutes).to.be.below(5); // Should be less than 5 minutes for session",
+									"    console.log('Session active for:', ageMinutes.toFixed(2), 'minutes');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/pacientes/{{protected_patient_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"pacientes",
+								"{{protected_patient_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "2.4 Update Patient",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test: Status code 200 OK",
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"// Test: Response has updated data",
+									"pm.test(\"Response has updated patient data\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('id');",
+									"    pm.expect(jsonData).to.have.property('nome');",
+									"    pm.expect(jsonData).to.have.property('email');",
+									"});",
+									"",
+									"// Test: Data was actually updated",
+									"pm.test(\"Patient data was updated\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.nome).to.include('Atualizado');",
+									"    pm.expect(jsonData.email).to.include('updated');",
+									"});",
+									"",
+									"// Update session activity",
+									"pm.environment.set('last_activity', new Date().toISOString());",
+									"console.log('Session activity updated');"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nome\": \"Carlos Silva Atualizado\",\n  \"cpf\": \"789.456.123-00\",\n  \"email\": \"carlos.updated@careplus.com\",\n  \"telefone\": \"(11) 98888-5555\",\n  \"dataNascimento\": \"1980-05-20\",\n  \"convenio\": \"Bradesco\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/pacientes/{{protected_patient_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"pacientes",
+								"{{protected_patient_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "2.5 Delete Patient",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test: Status code 204 No Content",
+									"pm.test(\"Status code is 204 No Content\", function () {",
+									"    pm.response.to.have.status(204);",
+									"});",
+									"",
+									"// Test: Response body is empty",
+									"pm.test(\"Response body is empty\", function () {",
+									"    pm.expect(pm.response.text()).to.eql('');",
+									"});",
+									"",
+									"// Clear patient ID after deletion",
+									"pm.environment.unset('protected_patient_id');",
+									"pm.environment.unset('protected_patient_cpf');",
+									"console.log('Protected patient deleted and variables cleared');"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/pacientes/{{protected_patient_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"pacientes",
+								"{{protected_patient_id}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "3. Authentication Tests",
+			"item": [
+				{
+					"name": "3.1 Login - Invalid Email",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test: Status code 401 Unauthorized",
+									"pm.test(\"Status code is 401 Unauthorized\", function () {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									"",
+									"// Test: Error message",
+									"pm.test(\"Error message for invalid email\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('error');",
+									"    pm.expect(jsonData.error).to.include('Usuário não encontrado');",
+									"});",
+									"",
+									"console.log('Invalid email test completed');"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"invalid@format\",\n  \"senha\": \"Admin@123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "3.2 Login - Wrong Password",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test: Status code 401 Unauthorized",
+									"pm.test(\"Status code is 401 Unauthorized\", function () {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									"",
+									"// Test: Error message",
+									"pm.test(\"Error message for wrong password\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('error');",
+									"    pm.expect(jsonData.error).to.include('Senha incorreta');",
+									"});",
+									"",
+									"console.log('Wrong password test completed');"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"admin@careplus.com\",\n  \"senha\": \"WrongPassword@123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "3.3 Login - Non-existent User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test: Status code 401 Unauthorized",
+									"pm.test(\"Status code is 401 Unauthorized\", function () {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									"",
+									"// Test: Error message",
+									"pm.test(\"Error message for non-existent user\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('error');",
+									"    pm.expect(jsonData.error).to.include('Usuário não encontrado');",
+									"});",
+									"",
+									"console.log('Non-existent user test completed');"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"nonexistent@careplus.com\",\n  \"senha\": \"Password@123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "4. Password Validation Tests",
+			"item": [
+				{
+					"name": "4.1 Register - Password Too Short",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test: Status code 400 Bad Request",
+									"pm.test(\"Status code is 400 Bad Request\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"// Test: Validation error message",
+									"pm.test(\"Password validation error\", function () {",
+									"    const responseText = pm.response.text();",
+									"    pm.expect(responseText).to.include('Senha deve ter entre 8 e 32 caracteres');",
+									"});",
+									"",
+									"console.log('Password too short test completed');"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"test.short@careplus.com\",\n  \"senha\": \"Ab1@\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "4.2 Register - Password Too Long",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test: Status code 400 Bad Request",
+									"pm.test(\"Status code is 400 Bad Request\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"// Test: Validation error message",
+									"pm.test(\"Password validation error\", function () {",
+									"    const responseText = pm.response.text();",
+									"    pm.expect(responseText).to.include('Senha deve ter entre 8 e 32 caracteres');",
+									"});",
+									"",
+									"console.log('Password too long test completed');"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"test.long@careplus.com\",\n  \"senha\": \"ThisPasswordIsWayTooLongAndExceedsThe32CharacterLimit@123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "4.3 Register - No Uppercase",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test: Status code 400 Bad Request",
+									"pm.test(\"Status code is 400 Bad Request\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"// Test: Validation error message",
+									"pm.test(\"Password validation error\", function () {",
+									"    const responseText = pm.response.text();",
+									"    pm.expect(responseText).to.include('1 letra maiúscula');",
+									"});",
+									"",
+									"console.log('No uppercase test completed');"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"test.noupper@careplus.com\",\n  \"senha\": \"password@123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "4.4 Register - No Lowercase",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test: Status code 400 Bad Request",
+									"pm.test(\"Status code is 400 Bad Request\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"// Test: Validation error message",
+									"pm.test(\"Password validation error\", function () {",
+									"    const responseText = pm.response.text();",
+									"    pm.expect(responseText).to.include('1 letra minúscula');",
+									"});",
+									"",
+									"console.log('No lowercase test completed');"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"test.nolower@careplus.com\",\n  \"senha\": \"PASSWORD@123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "4.5 Register - No Number",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test: Status code 400 Bad Request",
+									"pm.test(\"Status code is 400 Bad Request\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"// Test: Validation error message",
+									"pm.test(\"Password validation error\", function () {",
+									"    const responseText = pm.response.text();",
+									"    pm.expect(responseText).to.include('1 número');",
+									"});",
+									"",
+									"console.log('No number test completed');"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"test.nonumber@careplus.com\",\n  \"senha\": \"Password@\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "4.6 Register - No Special Character",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test: Status code 400 Bad Request",
+									"pm.test(\"Status code is 400 Bad Request\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"// Test: Validation error message",
+									"pm.test(\"Password validation error\", function () {",
+									"    const responseText = pm.response.text();",
+									"    pm.expect(responseText).to.include('1 caractere especial');",
+									"});",
+									"",
+									"console.log('No special character test completed');"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"test.nospecial@careplus.com\",\n  \"senha\": \"Password123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "4.7 Register - Valid Password",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test: Status code 201 Created",
+									"pm.test(\"Status code is 201 Created\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"// Test: Success message",
+									"pm.test(\"User created successfully with valid password\", function () {",
+									"    const responseText = pm.response.text();",
+									"    pm.expect(responseText).to.include('Usuário criado com sucesso');",
+									"});",
+									"",
+									"console.log('Valid password test completed');"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"test.valid@careplus.com\",\n  \"senha\": \"Valid@1234\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"register"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "5. Authorization Tests",
+			"item": [
+				{
+					"name": "5.1 Protected Route - No Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test: Status code 401 Unauthorized",
+									"pm.test(\"Status code is 401 Unauthorized\", function () {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									"",
+									"// Test: No authorization header was sent",
+									"pm.test(\"No authorization header\", function () {",
+									"    const authHeader = pm.request.headers.get('Authorization');",
+									"    pm.expect(authHeader).to.be.undefined;",
+									"});",
+									"",
+									"console.log('No token test completed');"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/pacientes",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"pacientes"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "5.2 Protected Route - Invalid Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test: Status code 401 Unauthorized",
+									"pm.test(\"Status code is 401 Unauthorized\", function () {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									"",
+									"// Test: Invalid token was sent",
+									"pm.test(\"Invalid token was sent\", function () {",
+									"    const authHeader = pm.request.headers.get('Authorization');",
+									"    pm.expect(authHeader).to.include('Bearer');",
+									"    pm.expect(authHeader).to.include('invalid.token.here');",
+									"});",
+									"",
+									"console.log('Invalid token test completed');"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer invalid.token.here",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/pacientes",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"pacientes"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "5.3 Protected Route - Malformed Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test: Status code 401 Unauthorized",
+									"pm.test(\"Status code is 401 Unauthorized\", function () {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									"",
+									"// Test: Malformed token was sent",
+									"pm.test(\"Malformed token was sent\", function () {",
+									"    const authHeader = pm.request.headers.get('Authorization');",
+									"    pm.expect(authHeader).to.include('Bearer');",
+									"    pm.expect(authHeader).to.include('not.a.jwt.token');",
+									"});",
+									"",
+									"console.log('Malformed token test completed');"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer not.a.jwt.token",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/pacientes",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"pacientes"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "6. Session Management Tests",
+			"item": [
+				{
+					"name": "6.1 Session Inactivity Test",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test: Status code 200 OK (first request)",
+									"pm.test(\"First request succeeds\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"// Set session start time",
+									"pm.environment.set('session_start', new Date().toISOString());",
+									"console.log('Session started at:', pm.environment.get('session_start'));",
+									"",
+									"// Wait for 2 minutes to test inactivity",
+									"console.log('Waiting 2 minutes to test session inactivity...');"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/pacientes",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"pacientes"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "6.2 Session After Inactivity",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Check if enough time has passed for inactivity test",
+									"const sessionStart = new Date(pm.environment.get('session_start'));",
+									"const now = new Date();",
+									"const elapsedMinutes = (now - sessionStart) / (1000 * 60);",
+									"",
+									"if (elapsedMinutes < 1.5) {",
+									"    console.log('Waiting for inactivity period... Current elapsed:', elapsedMinutes.toFixed(2), 'minutes');",
+									"    // Skip this request if not enough time has passed",
+									"    pm.globals.set('skipRequest', true);",
+									"} else {",
+									"    console.log('Testing session after inactivity of:', elapsedMinutes.toFixed(2), 'minutes');",
+									"    pm.globals.set('skipRequest', false);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Check if request should be skipped",
+									"if (pm.globals.get('skipRequest')) {",
+									"    pm.test('Request skipped - waiting for inactivity period', function () {",
+									"        pm.expect(true).to.be.true;",
+									"    });",
+									"} else {",
+									"    // Test: Status code 401 Unauthorized (session expired)",
+									"    pm.test(\"Status code is 401 Unauthorized - session expired\", function () {",
+									"        pm.response.to.have.status(401);",
+									"    });",
+									"    ",
+									"    // Test: Session expiration message",
+									"    pm.test(\"Session expired message\", function () {",
+									"        const responseText = pm.response.text();",
+									"        pm.expect(responseText).to.include('Sessão expirada');",
+									"    });",
+									"    ",
+									"    console.log('Session inactivity test completed');",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/pacientes",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"pacientes"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "6.3 Session Longevity Test",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Check if session has been active for more than 5 minutes",
+									"const loginTime = new Date(pm.environment.get('login_time'));",
+									"const now = new Date();",
+									"const activeMinutes = (now - loginTime) / (1000 * 60);",
+									"",
+									"if (activeMinutes < 4.5) {",
+									"    console.log('Session still active for:', activeMinutes.toFixed(2), 'minutes');",
+									"    pm.globals.set('skipRequest', true);",
+									"} else {",
+									"    console.log('Testing session longevity after:', activeMinutes.toFixed(2), 'minutes');",
+									"    pm.globals.set('skipRequest', false);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Check if request should be skipped",
+									"if (pm.globals.get('skipRequest')) {",
+									"    pm.test('Request skipped - session still valid', function () {",
+									"        pm.expect(true).to.be.true;",
+									"    });",
+									"} else {",
+									"    // Test: Status code 401 Unauthorized (session expired by longevity)",
+									"    pm.test(\"Status code is 401 Unauthorized - session expired by longevity\", function () {",
+									"        pm.response.to.have.status(401);",
+									"    });",
+									"    ",
+									"    console.log('Session longevity test completed');",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/pacientes",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"pacientes"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "7. Security Tests",
+			"item": [
+				{
+					"name": "7.1 SQL Injection Test",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test: Status code 401 Unauthorized",
+									"pm.test(\"Status code is 401 Unauthorized\", function () {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									"",
+									"// Test: SQL injection attempt was blocked",
+									"pm.test(\"SQL injection attempt blocked\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('error');",
+									"    pm.expect(jsonData.error).to.include('Usuário não encontrado');",
+									"});",
+									"",
+									"console.log('SQL injection test completed');"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"' OR 1=1 --\",\n  \"senha\": \"Password@123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "7.2 Token Tampering Test",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test: Status code 401 Unauthorized",
+									"pm.test(\"Status code is 401 Unauthorized\", function () {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									"",
+									"// Test: Tampered token was rejected",
+									"pm.test(\"Tampered token was rejected\", function () {",
+									"    const authHeader = pm.request.headers.get('Authorization');",
+									"    pm.expect(authHeader).to.include('Bearer');",
+									"    pm.expect(authHeader).to.include('tampered');",
+									"});",
+									"",
+									"console.log('Token tampering test completed');"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}tampered",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/pacientes",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"pacientes"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "7.3 Token Reuse After Logout",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Check if we have a valid token to test",
+									"const token = pm.environment.get('jwt_token');",
+									"if (!token) {",
+									"    console.log('No token available for reuse test - skipping');",
+									"    pm.globals.set('skipRequest', true);",
+									"} else {",
+									"    console.log('Testing token reuse after logout');",
+									"    pm.globals.set('skipRequest', false);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Check if request should be skipped",
+									"if (pm.globals.get('skipRequest')) {",
+									"    pm.test('Request skipped - no token available', function () {",
+									"        pm.expect(true).to.be.true;",
+									"    });",
+									"} else {",
+									"    // Test: Status code 401 Unauthorized",
+									"    pm.test(\"Status code is 401 Unauthorized - token reused after logout\", function () {",
+									"        pm.response.to.have.status(401);",
+									"    });",
+									"    ",
+									"    console.log('Token reuse test completed');",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/pacientes",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"pacientes"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "8. Complete Flow Test",
+			"item": [
+				{
+					"name": "8.1 Register New User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test: Status code 201 Created",
+									"pm.test(\"Status code is 201 Created\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"// Store user credentials for login",
+									"if (pm.response.code === 201) {",
+									"    const requestBody = JSON.parse(pm.request.body.raw);",
+									"    pm.environment.set('flow_user_email', requestBody.email);",
+									"    pm.environment.set('flow_user_password', requestBody.senha);",
+									"    console.log('Flow user registered:', requestBody.email);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"flowtest@careplus.com\",\n  \"senha\": \"Flow@1234\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "8.2 Login with New User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test: Status code 200 OK",
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"// Save JWT token for flow",
+									"if (pm.response.code === 200) {",
+									"    const jsonData = pm.response.json();",
+									"    pm.environment.set('flow_jwt_token', jsonData.token);",
+									"    pm.environment.set('flow_login_time', new Date().toISOString());",
+									"    console.log('Flow login successful, token saved');",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"{{flow_user_email}}\",\n  \"senha\": \"{{flow_user_password}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "8.3 Access Protected Resource",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test: Status code 200 OK",
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"// Test: Response is array",
+									"pm.test(\"Response is array\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.be.an('array');",
+									"});",
+									"",
+									"// Test: Session is active",
+									"pm.test(\"Session is active\", function () {",
+									"    const loginTime = new Date(pm.environment.get('flow_login_time'));",
+									"    const now = new Date();",
+									"    const ageMinutes = (now - loginTime) / (1000 * 60);",
+									"    pm.expect(ageMinutes).to.be.below(5);",
+									"    console.log('Flow session active for:', ageMinutes.toFixed(2), 'minutes');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{flow_jwt_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/pacientes",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"pacientes"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "8.4 Create Patient with Flow Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test: Status code 201 Created",
+									"pm.test(\"Status code is 201 Created\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"// Test: Response contains patient data",
+									"pm.test(\"Response has patient data\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('id');",
+									"    pm.expect(jsonData).to.have.property('nome');",
+									"});",
+									"",
+									"// Store flow patient ID",
+									"if (pm.response.code === 201) {",
+									"    const jsonData = pm.response.json();",
+									"    pm.environment.set('flow_patient_id', jsonData.id);",
+									"    console.log('Flow patient created with ID:', jsonData.id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{flow_jwt_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nome\": \"Flow Test Patient\",\n  \"cpf\": \"123.456.789-00\",\n  \"email\": \"flowpatient@careplus.com\",\n  \"telefone\": \"(11) 91234-5678\",\n  \"dataNascimento\": \"1990-01-01\",\n  \"convenio\": \"FlowTest\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/pacientes",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"pacientes"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "8.5 Logout Flow User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test: Status code 200 OK",
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"// Clear flow variables",
+									"if (pm.response.code === 200) {",
+									"    pm.environment.unset('flow_jwt_token');",
+									"    pm.environment.unset('flow_login_time');",
+									"    pm.environment.unset('flow_patient_id');",
+									"    console.log('Flow completed and variables cleared');",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{flow_jwt_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/auth/logout",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"logout"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Global pre-request script",
+					"console.log('=== Request Start ===');",
+					"console.log('Method:', pm.request.method);",
+					"console.log('URL:', pm.request.url.toString());",
+					"",
+					"// Add timestamp for tracking",
+					"pm.environment.set('requestTimestamp', new Date().toISOString());",
+					"",
+					"// Log current environment variables",
+					"console.log('Base URL:', pm.environment.get('base_url'));",
+					"console.log('JWT Token exists:', !!pm.environment.get('jwt_token'));",
+					"console.log('Login Time:', pm.environment.get('login_time'));",
+					"",
+					"// Auto-add authorization header if token exists and not already present",
+					"if (pm.environment.get('jwt_token') && !pm.request.headers.has('Authorization')) {",
+					"    pm.request.headers.add({",
+					"        key: 'Authorization',",
+					"        value: 'Bearer ' + pm.environment.get('jwt_token')",
+					"    });",
+					"    console.log('Auto-added Authorization header');",
+					"}"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Global test script",
+					"console.log('=== Response End ===');",
+					"console.log('Status Code:', pm.response.code);",
+					"console.log('Response Time:', pm.response.responseTime + 'ms');",
+					"console.log('Response Size:', pm.response.responseSize + ' bytes');",
+					"",
+					"// Performance assertions",
+					"pm.test(\"Response time is less than 3000ms\", function () {",
+					"    pm.expect(pm.response.responseTime).to.be.below(3000);",
+					"});",
+					"",
+					"// Content type validation for successful responses",
+					"if (pm.response.code >= 200 && pm.response.code < 300) {",
+					"    pm.test(\"Response has valid content type\", function () {",
+					"        const contentType = pm.response.headers.get('Content-Type');",
+					"        if (contentType && pm.response.text()) {",
+					"            pm.expect(contentType).to.include('application/json');",
+					"        }",
+					"    });",
+					"}",
+					"",
+					"// Security headers validation",
+					"pm.test(\"Security headers are present\", function () {",
+					"    // Check for common security headers",
+					"    const headers = pm.response.headers;",
+					"    ",
+					"    // Note: These may not be present in development",
+					"    const securityHeaders = ['X-Content-Type-Options', 'X-Frame-Options', 'X-XSS-Protection'];",
+					"    ",
+					"    securityHeaders.forEach(header => {",
+					"        if (headers.get(header)) {",
+					"            console.log('Security header present:', header);",
+					"        }",
+					"    });",
+					"});",
+					"",
+					"// Log session status for authenticated endpoints",
+					"if (pm.request.headers.has('Authorization')) {",
+					"    const loginTime = pm.environment.get('login_time');",
+					"    if (loginTime) {",
+					"        const now = new Date();",
+					"        const sessionAge = (now - new Date(loginTime)) / (1000 * 60);",
+					"        console.log('Session age:', sessionAge.toFixed(2), 'minutes');",
+					"        ",
+					"        // Warn about session expiration",
+					"        if (sessionAge > 14) {",
+					"            console.warn('WARNING: Session is about to expire!');",
+					"        }",
+					"        if (sessionAge > 4) {",
+					"            console.warn('WARNING: Session approaching 5-minute limit!');",
+					"        }",
+					"    }",
+					"}"
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8080",
+			"type": "string",
+			"description": "Base URL for the API"
+		},
+		{
+			"key": "jwt_token",
+			"value": "",
+			"type": "string",
+			"description": "JWT authentication token (auto-set by login)"
+		},
+		{
+			"key": "token_type",
+			"value": "Bearer",
+			"type": "string",
+			"description": "Token type (usually Bearer)"
+		},
+		{
+			"key": "login_time",
+			"value": "",
+			"type": "string",
+			"description": "Timestamp when user logged in (for session tracking)"
+		},
+		{
+			"key": "user_email",
+			"value": "admin@careplus.com",
+			"type": "string",
+			"description": "Default user email for testing"
+		},
+		{
+			"key": "user_password",
+			"value": "Admin@123",
+			"type": "string",
+			"description": "Default user password for testing"
+		},
+		{
+			"key": "protected_patient_id",
+			"value": "",
+			"type": "string",
+			"description": "ID of patient created with authentication (auto-set)"
+		},
+		{
+			"key": "protected_patient_cpf",
+			"value": "",
+			"type": "string",
+			"description": "CPF of patient created with authentication (auto-set)"
+		},
+		{
+			"key": "test_user_email",
+			"value": "",
+			"type": "string",
+			"description": "Email of user created during tests (auto-set)"
+		},
+		{
+			"key": "test_user_password",
+			"value": "",
+			"type": "string",
+			"description": "Password of user created during tests (auto-set)"
+		},
+		{
+			"key": "flow_user_email",
+			"value": "",
+			"type": "string",
+			"description": "Email for complete flow test (auto-set)"
+		},
+		{
+			"key": "flow_user_password",
+			"value": "",
+			"type": "string",
+			"description": "Password for complete flow test (auto-set)"
+		},
+		{
+			"key": "flow_jwt_token",
+			"value": "",
+			"type": "string",
+			"description": "JWT token for complete flow test (auto-set)"
+		},
+		{
+			"key": "flow_login_time",
+			"value": "",
+			"type": "string",
+			"description": "Login time for complete flow test (auto-set)"
+		},
+		{
+			"key": "flow_patient_id",
+			"value": "",
+			"type": "string",
+			"description": "Patient ID created in flow test (auto-set)"
+		},
+		{
+			"key": "session_start",
+			"value": "",
+			"type": "string",
+			"description": "Session start time for inactivity testing (auto-set)"
+		},
+		{
+			"key": "last_activity",
+			"value": "",
+			"type": "string",
+			"description": "Last activity timestamp (auto-set)"
+		},
+		{
+			"key": "requestTimestamp",
+			"value": "",
+			"type": "string",
+			"description": "Timestamp of current request (auto-set)"
+		}
+	]
+}

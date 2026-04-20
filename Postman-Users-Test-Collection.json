@@ -1,0 +1,641 @@
+{
+	"info": {
+		"_postman_id": "b2c3d4e5-f6g7-8901-bcde-f23456789012",
+		"name": "Care Plus - Users Test Collection",
+		"description": "Collection with all test users from database for easy authentication testing",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "care-plus-users-test"
+	},
+	"item": [
+		{
+			"name": "0. Database Users Reference",
+			"item": [
+				{
+					"name": "0.1 Users List (Reference)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Reference information about test users",
+									"pm.test(\"Users Reference\", function () {",
+									"    console.log('=== CARE PLUS TEST USERS ===');",
+									"    console.log('1. admin@careplus.com / Admin@123 (Administrator)');",
+									"    console.log('2. usuario@careplus.com / password (Regular User)');",
+									"    console.log('3. testsenha@careplus.com / Test@1234 (Password Validation)');",
+									"    console.log('4. sessao@careplus.com / Admin@123 (Session Active - 2min)');",
+									"    console.log('5. expirado@careplus.com / Admin@123 (Session Expired - 6min)');",
+									"    console.log('6. sqltest@careplus.com / Sql@1234 (SQL Injection Test)');",
+									"    console.log('7. token@careplus.com / Token@1234 (Token Tampering Test)');",
+									"    console.log('=============================');",
+									"    pm.expect(true).to.be.true;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/auth/validate",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"validate"
+							]
+						},
+						"description": "Reference request showing all test users available in database"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "1. Admin User Tests",
+			"item": [
+				{
+					"name": "1.1 Admin Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test: Status code 200 OK",
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"// Test: JWT Token received",
+									"pm.test(\"JWT Token received\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('token');",
+									"    pm.expect(jsonData.token).to.be.a('string');",
+									"    pm.expect(jsonData.token.length).to.be.above(0);",
+									"});",
+									"",
+									"// Save admin token",
+									"if (pm.response.code === 200) {",
+									"    const jsonData = pm.response.json();",
+									"    pm.environment.set('admin_jwt_token', jsonData.token);",
+									"    pm.environment.set('admin_login_time', new Date().toISOString());",
+									"    console.log('Admin token saved successfully');",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"admin@careplus.com\",\n  \"senha\": \"Admin@123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						},
+						"description": "Login with admin user (admin@careplus.com / Admin@123)"
+					},
+					"response": []
+				},
+				{
+					"name": "1.2 Admin Protected Access",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test: Status code 200 OK",
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"// Test: Admin token is working",
+									"pm.test(\"Admin token is working\", function () {",
+									"    const authHeader = pm.request.headers.get('Authorization');",
+									"    pm.expect(authHeader).to.include('Bearer');",
+									"    pm.expect(authHeader).to.include(pm.environment.get('admin_jwt_token'));",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_jwt_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/pacientes",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"pacientes"
+							]
+						},
+						"description": "Access protected endpoint with admin token"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "2. Regular User Tests",
+			"item": [
+				{
+					"name": "2.1 Regular User Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test: Status code 200 OK",
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"// Save regular user token",
+									"if (pm.response.code === 200) {",
+									"    const jsonData = pm.response.json();",
+									"    pm.environment.set('user_jwt_token', jsonData.token);",
+									"    pm.environment.set('user_login_time', new Date().toISOString());",
+									"    console.log('Regular user token saved');",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"usuario@careplus.com\",\n  \"senha\": \"password\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						},
+						"description": "Login with regular user (usuario@careplus.com / password)"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "3. Session Tests",
+			"item": [
+				{
+					"name": "3.1 Active Session User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test: Status code 200 OK",
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"// Save session user token",
+									"if (pm.response.code === 200) {",
+									"    const jsonData = pm.response.json();",
+									"    pm.environment.set('session_jwt_token', jsonData.token);",
+									"    console.log('Session user token saved (user with 2min active session)');",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"sessao@careplus.com\",\n  \"senha\": \"Admin@123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						},
+						"description": "Login with user that has active session (sessao@careplus.com / Admin@123)"
+					},
+					"response": []
+				},
+				{
+					"name": "3.2 Expired Session User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test: Status code 200 OK (login should work even with expired session)",
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"// Save expired session user token",
+									"if (pm.response.code === 200) {",
+									"    const jsonData = pm.response.json();",
+									"    pm.environment.set('expired_session_token', jsonData.token);",
+									"    console.log('Expired session user token saved');",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"expirado@careplus.com\",\n  \"senha\": \"Admin@123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						},
+						"description": "Login with user that has expired session (expirado@careplus.com / Admin@123)"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "4. Security Tests",
+			"item": [
+				{
+					"name": "4.1 SQL Injection Test User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test: Status code 200 OK",
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"// Save SQL test user token",
+									"if (pm.response.code === 200) {",
+									"    const jsonData = pm.response.json();",
+									"    pm.environment.set('sql_test_token', jsonData.token);",
+									"    console.log('SQL test user token saved');",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"sqltest@careplus.com\",\n  \"senha\": \"Sql@1234\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						},
+						"description": "Login with SQL injection test user (sqltest@careplus.com / Sql@1234)"
+					},
+					"response": []
+				},
+				{
+					"name": "4.2 Token Tampering Test User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test: Status code 200 OK",
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"// Save token tampering test user token",
+									"if (pm.response.code === 200) {",
+									"    const jsonData = pm.response.json();",
+									"    pm.environment.set('token_tampering_token', jsonData.token);",
+									"    console.log('Token tampering test user token saved');",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"token@careplus.com\",\n  \"senha\": \"Token@1234\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						},
+						"description": "Login with token tampering test user (token@careplus.com / Token@1234)"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "5. Password Validation Tests",
+			"item": [
+				{
+					"name": "5.1 Valid Password Test",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test: Status code 200 OK",
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"// Save password validation user token",
+									"if (pm.response.code === 200) {",
+									"    const jsonData = pm.response.json();",
+									"    pm.environment.set('password_test_token', jsonData.token);",
+									"    console.log('Password validation test user token saved');",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"testsenha@careplus.com\",\n  \"senha\": \"Test@1234\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						},
+						"description": "Login with password validation test user (testsenha@careplus.com / Test@1234)"
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8080",
+			"type": "string",
+			"description": "Base URL for the API"
+		},
+		{
+			"key": "admin_jwt_token",
+			"value": "",
+			"type": "string",
+			"description": "JWT token for admin user (auto-set)"
+		},
+		{
+			"key": "user_jwt_token",
+			"value": "",
+			"type": "string",
+			"description": "JWT token for regular user (auto-set)"
+		},
+		{
+			"key": "session_jwt_token",
+			"value": "",
+			"type": "string",
+			"description": "JWT token for session test user (auto-set)"
+		},
+		{
+			"key": "expired_session_token",
+			"value": "",
+			"type": "string",
+			"description": "JWT token for expired session user (auto-set)"
+		},
+		{
+			"key": "sql_test_token",
+			"value": "",
+			"type": "string",
+			"description": "JWT token for SQL injection test user (auto-set)"
+		},
+		{
+			"key": "token_tampering_token",
+			"value": "",
+			"type": "string",
+			"description": "JWT token for token tampering test user (auto-set)"
+		},
+		{
+			"key": "password_test_token",
+			"value": "",
+			"type": "string",
+			"description": "JWT token for password validation test user (auto-set)"
+		},
+		{
+			"key": "admin_login_time",
+			"value": "",
+			"type": "string",
+			"description": "Admin login timestamp (auto-set)"
+		},
+		{
+			"key": "user_login_time",
+			"value": "",
+			"type": "string",
+			"description": "Regular user login timestamp (auto-set)"
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Global pre-request script for users test collection",
+					"console.log('=== Users Test Collection Request ===');",
+					"console.log('Method:', pm.request.method);",
+					"console.log('URL:', pm.request.url.toString());",
+					"",
+					"// Log available tokens",
+					"console.log('Available tokens:');",
+					"console.log('- Admin token:', !!pm.environment.get('admin_jwt_token'));",
+					"console.log('- User token:', !!pm.environment.get('user_jwt_token'));",
+					"console.log('- Session token:', !!pm.environment.get('session_jwt_token'));",
+					"console.log('- Expired session token:', !!pm.environment.get('expired_session_token'));",
+					"console.log('- SQL test token:', !!pm.environment.get('sql_test_token'));",
+					"console.log('- Token tampering token:', !!pm.environment.get('token_tampering_token'));",
+					"console.log('- Password test token:', !!pm.environment.get('password_test_token'));"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Global test script",
+					"console.log('=== Users Test Collection Response ===');",
+					"console.log('Status Code:', pm.response.code);",
+					"console.log('Response Time:', pm.response.responseTime + 'ms');",
+					"",
+					"// Performance test",
+					"pm.test(\"Response time is less than 3000ms\", function () {",
+					"    pm.expect(pm.response.responseTime).to.be.below(3000);",
+					"});",
+					"",
+					"// Log session status for authenticated endpoints",
+					"if (pm.request.headers.has('Authorization')) {",
+					"    const authHeader = pm.request.headers.get('Authorization');",
+					"    console.log('Using authorization header:', authHeader.substring(0, 20) + '...');",
+									"}"
+				]
+			}
+		}
+	]
+}
