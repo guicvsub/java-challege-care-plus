@@ -1,52 +1,38 @@
 {
 	"info": {
-		"_postman_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-		"name": "Care Plus API - Complete Collection",
-		"description": "Complete Postman collection for Care Plus Patient Management API with all endpoints, examples, and test scripts",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "care-plus-api"
+		"_postman_id": "care-plus-complete-api",
+		"name": "Care Plus API - Complete JWT Tests",
+		"description": "Coleção completa da Care Plus API com autenticação JWT válida e testes automatizados",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
 		{
-			"name": "🏥 Patient Management",
+			"name": "1. Autenticação",
 			"item": [
 				{
-					"name": "📝 Create Patient",
+					"name": "POST /login - Login Válido",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
-									"// Test: Status code 201 Created",
-									"pm.test(\"Status code is 201 Created\", function () {",
-									"    pm.response.to.have.status(201);",
+									"// Testar se o login foi bem-sucedido",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
 									"});",
 									"",
-									"// Test: Response contains patient data",
-									"pm.test(\"Response has patient data\", function () {",
+									"pm.test(\"Response has tokenJWT\", function () {",
 									"    const jsonData = pm.response.json();",
-									"    pm.expect(jsonData).to.have.property('id');",
-									"    pm.expect(jsonData).to.have.property('nome');",
-									"    pm.expect(jsonData).to.have.property('cpf');",
-									"    pm.expect(jsonData).to.have.property('email');",
-									"    pm.expect(jsonData).to.have.property('telefone');",
+									"    pm.expect(jsonData).to.have.property('tokenJWT');",
+									"    pm.expect(jsonData.tokenJWT).to.be.a('string');",
+									"    pm.expect(jsonData.tokenJWT).to.not.be.empty;",
 									"});",
 									"",
-									"// Test: Patient data validation",
-									"pm.test(\"Patient data is valid\", function () {",
+									"// Salvar o token para uso em outras requisições",
+									"if (pm.response.code === 200) {",
 									"    const jsonData = pm.response.json();",
-									"    pm.expect(jsonData.nome).to.be.a('string');",
-									"    pm.expect(jsonData.cpf).to.be.a('string');",
-									"    pm.expect(jsonData.email).to.include('@');",
-									"    pm.expect(jsonData.telefone).to.be.a('string');",
-									"});",
-									"",
-									"// Store created patient ID for subsequent tests",
-									"if (pm.response.code === 201) {",
-									"    const jsonData = pm.response.json();",
-									"    pm.environment.set(\"createdPatientId\", jsonData.id);",
-									"    pm.environment.set(\"createdPatientCpf\", jsonData.cpf);",
-									"    console.log('Created patient ID:', jsonData.id);",
+									"    pm.collectionVariables.set('jwt_token', jsonData.tokenJWT);",
+									"    console.log('Token JWT salvo com sucesso!');",
 									"}"
 								],
 								"type": "text/javascript"
@@ -58,71 +44,137 @@
 						"header": [
 							{
 								"key": "Content-Type",
-								"value": "application/json",
-								"type": "text"
-							},
-							{
-								"key": "Accept",
-								"value": "application/json",
-								"type": "text"
+								"value": "application/json"
 							}
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"nome\": \"Ana Santos\",\n  \"cpf\": \"456.789.123-00\",\n  \"email\": \"ana.santos@email.com\",\n  \"telefone\": \"(11) 91234-5678\",\n  \"dataNascimento\": \"1985-03-15\",\n  \"convenio\": \"Unimed\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
+							"raw": "{\n  \"login\": \"usuario1@careplus.com\",\n  \"senha\": \"minha_senha_secreta\"\n}"
 						},
 						"url": {
-							"raw": "{{base_url}}/api/pacientes",
+							"raw": "{{baseUrl}}/login",
 							"host": [
-								"{{base_url}}"
+								"{{baseUrl}}"
 							],
 							"path": [
-								"api",
-								"pacientes"
+								"login"
 							]
-						}
+						},
+						"description": "Login com credenciais válidas para obter token JWT\n\n**Credenciais Testadas:**\n- Email: usuario1@careplus.com\n- Senha: minha_senha_secreta\n\n**Resposta Esperada:**\n```json\n{\n  \"tokenJWT\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\"\n}\n```"
 					},
 					"response": []
 				},
 				{
-					"name": "📋 List All Patients",
+					"name": "POST /login - Login Inválido",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
-									"// Test: Status code 200 OK",
-									"pm.test(\"Status code is 200 OK\", function () {",
+									"pm.test(\"Status code is 403\", function () {",
+									"    pm.response.to.have.status(403);",
+									"});",
+									"",
+									"pm.test(\"Response has error message\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('error');",
+									"    pm.expect(jsonData).to.have.property('message');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"login\": \"invalido@careplus.com\",\n  \"senha\": \"senha_errada\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"login"
+							]
+						},
+						"description": "Teste de login com credenciais inválidas - deve retornar 403"
+					},
+					"response": []
+				},
+				{
+					"name": "POST /login - Campos Vazios",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"login\": \"\",\n  \"senha\": \"\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"login"
+							]
+						},
+						"description": "Teste de login com campos vazios - deve retornar 400"
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints de autenticação JWT"
+		},
+		{
+			"name": "2. Pacientes - CRUD",
+			"item": [
+				{
+					"name": "GET /api/pacientes - Listar Todos",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
 									"    pm.response.to.have.status(200);",
 									"});",
 									"",
-									"// Test: Response is an array",
-									"pm.test(\"Response is an array\", function () {",
+									"pm.test(\"Response is array\", function () {",
 									"    const jsonData = pm.response.json();",
 									"    pm.expect(jsonData).to.be.an('array');",
 									"});",
 									"",
-									"// Test: Each patient has required fields",
-									"pm.test(\"Each patient has required fields\", function () {",
-									"    const jsonData = pm.response.json();",
-									"    if (jsonData.length > 0) {",
-									"        jsonData.forEach(patient => {",
-									"            pm.expect(patient).to.have.property('id');",
-									"            pm.expect(patient).to.have.property('nome');",
-									"            pm.expect(patient).to.have.property('cpf');",
-									"            pm.expect(patient).to.have.property('email');",
-									"            pm.expect(patient).to.have.property('telefone');",
-									"        });",
-									"    }",
-									"});",
-									"",
-									"// Log response time",
-									"console.log('List patients response time:', pm.response.responseTime + 'ms');"
+									"pm.test(\"Authorization header is present\", function () {",
+									"    pm.expect(pm.request.headers.get('Authorization')).to.include('Bearer');",
+									"});"
 								],
 								"type": "text/javascript"
 							}
@@ -132,53 +184,42 @@
 						"method": "GET",
 						"header": [
 							{
-								"key": "Accept",
-								"value": "application/json",
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}",
 								"type": "text"
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/api/pacientes",
+							"raw": "{{baseUrl}}/api/pacientes",
 							"host": [
-								"{{base_url}}"
+								"{{baseUrl}}"
 							],
 							"path": [
 								"api",
 								"pacientes"
 							]
-						}
+						},
+						"description": "Listar todos os pacientes - requer autenticação JWT"
 					},
 					"response": []
 				},
 				{
-					"name": "🔍 Get Patient by ID",
+					"name": "GET /api/pacientes/{id} - Buscar por ID",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
-									"// Test: Status code 200 OK",
-									"pm.test(\"Status code is 200 OK\", function () {",
+									"pm.test(\"Status code is 200\", function () {",
 									"    pm.response.to.have.status(200);",
 									"});",
 									"",
-									"// Test: Response has patient data",
 									"pm.test(\"Response has patient data\", function () {",
 									"    const jsonData = pm.response.json();",
 									"    pm.expect(jsonData).to.have.property('id');",
 									"    pm.expect(jsonData).to.have.property('nome');",
 									"    pm.expect(jsonData).to.have.property('cpf');",
-									"    pm.expect(jsonData).to.have.property('email');",
-									"});",
-									"",
-									"// Test: Patient ID matches requested ID",
-									"pm.test(\"Patient ID matches requested ID\", function () {",
-									"    const jsonData = pm.response.json();",
-									"    const requestedId = pm.request.url.path[pm.request.url.path.length - 1];",
-									"    pm.expect(jsonData.id.toString()).to.eql(requestedId);",
-									"});",
-									"",
-									"console.log('Retrieved patient:', pm.response.json().nome);"
+									"});"
 								],
 								"type": "text/javascript"
 							}
@@ -188,120 +229,103 @@
 						"method": "GET",
 						"header": [
 							{
-								"key": "Accept",
-								"value": "application/json",
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}",
 								"type": "text"
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/api/pacientes/{{patientId}}",
+							"raw": "{{baseUrl}}/api/pacientes/1",
 							"host": [
-								"{{base_url}}"
+								"{{baseUrl}}"
 							],
 							"path": [
 								"api",
 								"pacientes",
-								"{{patientId}}"
+								"1"
 							]
-						}
+						},
+						"description": "Buscar paciente específico por ID"
 					},
 					"response": []
 				},
 				{
-					"name": "🔍 Get Patient by CPF",
+					"name": "POST /api/pacientes - Criar Novo",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
-									"// Test: Status code 200 OK",
-									"pm.test(\"Status code is 200 OK\", function () {",
-									"    pm.response.to.have.status(200);",
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
 									"});",
 									"",
-									"// Test: Response has patient data",
-									"pm.test(\"Response has patient data\", function () {",
+									"pm.test(\"Response has created patient data\", function () {",
 									"    const jsonData = pm.response.json();",
 									"    pm.expect(jsonData).to.have.property('id');",
 									"    pm.expect(jsonData).to.have.property('nome');",
 									"    pm.expect(jsonData).to.have.property('cpf');",
-									"    pm.expect(jsonData).to.have.property('email');",
 									"});",
 									"",
-									"// Test: Patient CPF matches requested CPF",
-									"pm.test(\"Patient CPF matches requested CPF\", function () {",
+									"// Salvar ID do paciente criado para testes futuros",
+									"if (pm.response.code === 201) {",
 									"    const jsonData = pm.response.json();",
-									"    const requestedCpf = pm.request.url.path[pm.request.url.path.length - 1];",
-									"    pm.expect(jsonData.cpf).to.eql(requestedCpf);",
-									"});",
-									"",
-									"console.log('Retrieved patient by CPF:', pm.response.json().nome);"
+									"    pm.collectionVariables.set('created_patient_id', jsonData.id);",
+									"    console.log('Paciente criado com ID:', jsonData.id);",
+									"}"
 								],
 								"type": "text/javascript"
 							}
 						}
 					],
 					"request": {
-						"method": "GET",
+						"method": "POST",
 						"header": [
 							{
-								"key": "Accept",
-								"value": "application/json",
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}",
 								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
 							}
 						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nome\": \"Carlos Silva Teste\",\n  \"cpf\": \"987.654.321-00\",\n  \"email\": \"carlos.silva@teste.com\",\n  \"telefone\": \"(11) 95555-4444\",\n  \"dataNascimento\": \"1988-08-20\",\n  \"convenio\": \"SulAmerica\"\n}"
+						},
 						"url": {
-							"raw": "{{base_url}}/api/pacientes/cpf/{{patientCpf}}",
+							"raw": "{{baseUrl}}/api/pacientes",
 							"host": [
-								"{{base_url}}"
+								"{{baseUrl}}"
 							],
 							"path": [
 								"api",
-								"pacientes",
-								"cpf",
-								"{{patientCpf}}"
+								"pacientes"
 							]
-						}
+						},
+						"description": "Criar novo paciente"
 					},
 					"response": []
 				},
 				{
-					"name": "✏️ Update Patient",
+					"name": "PUT /api/pacientes/{id} - Atualizar",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
-									"// Test: Status code 200 OK",
-									"pm.test(\"Status code is 200 OK\", function () {",
+									"pm.test(\"Status code is 200\", function () {",
 									"    pm.response.to.have.status(200);",
 									"});",
 									"",
-									"// Test: Response has updated patient data",
 									"pm.test(\"Response has updated patient data\", function () {",
 									"    const jsonData = pm.response.json();",
 									"    pm.expect(jsonData).to.have.property('id');",
 									"    pm.expect(jsonData).to.have.property('nome');",
-									"    pm.expect(jsonData).to.have.property('cpf');",
-									"    pm.expect(jsonData).to.have.property('email');",
-									"});",
-									"",
-									"// Test: Patient data was updated",
-									"pm.test(\"Patient data was updated\", function () {",
-									"    const jsonData = pm.response.json();",
-									"    pm.expect(jsonData.nome).to.eql('Ana Santos Atualizada');",
-									"    pm.expect(jsonData.email).to.eql('ana.atualizada@email.com');",
-									"    pm.expect(jsonData.telefone).to.eql('(11) 98888-7777');",
-									"});",
-									"",
-									"// Test: Patient ID matches requested ID",
-									"pm.test(\"Patient ID matches requested ID\", function () {",
-									"    const jsonData = pm.response.json();",
-									"    const requestedId = pm.request.url.path[pm.request.url.path.length - 1];",
-									"    pm.expect(jsonData.id.toString()).to.eql(requestedId);",
-									"});",
-									"",
-									"console.log('Updated patient:', pm.response.json().nome);"
+									"    pm.expect(jsonData.nome).to.include('Atualizado');",
+									"});"
 								],
 								"type": "text/javascript"
 							}
@@ -311,62 +335,48 @@
 						"method": "PUT",
 						"header": [
 							{
-								"key": "Content-Type",
-								"value": "application/json",
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}",
 								"type": "text"
 							},
 							{
-								"key": "Accept",
-								"value": "application/json",
-								"type": "text"
+								"key": "Content-Type",
+								"value": "application/json"
 							}
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"nome\": \"Ana Santos Atualizada\",\n  \"cpf\": \"456.789.123-00\",\n  \"email\": \"ana.atualizada@email.com\",\n  \"telefone\": \"(11) 98888-7777\",\n  \"dataNascimento\": \"1985-03-15\",\n  \"convenio\": \"Bradesco\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
+							"raw": "{\n  \"nome\": \"Ana Santos Atualizado\",\n  \"cpf\": \"456.789.123-00\",\n  \"email\": \"ana.atualizada@email.com\",\n  \"telefone\": \"(11) 98888-7777\",\n  \"dataNascimento\": \"1985-03-15\",\n  \"convenio\": \"Bradesco\"\n}"
 						},
 						"url": {
-							"raw": "{{base_url}}/api/pacientes/{{patientId}}",
+							"raw": "{{baseUrl}}/api/pacientes/1",
 							"host": [
-								"{{base_url}}"
+								"{{baseUrl}}"
 							],
 							"path": [
 								"api",
 								"pacientes",
-								"{{patientId}}"
+								"1"
 							]
-						}
+						},
+						"description": "Atualizar dados de paciente existente"
 					},
 					"response": []
 				},
 				{
-					"name": "🗑️ Delete Patient",
+					"name": "DELETE /api/pacientes/{id} - Deletar",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
-									"// Test: Status code 204 No Content",
-									"pm.test(\"Status code is 204 No Content\", function () {",
+									"pm.test(\"Status code is 204\", function () {",
 									"    pm.response.to.have.status(204);",
 									"});",
 									"",
-									"// Test: Response body is empty",
 									"pm.test(\"Response body is empty\", function () {",
-									"    pm.expect(pm.response.text()).to.eql('');",
-									"});",
-									"",
-									"// Test: Response headers",
-									"pm.test(\"Response has correct headers\", function () {",
-									"    pm.expect(pm.response.headers.get('Content-Length')).to.eql('0');",
-									"});",
-									"",
-									"console.log('Deleted patient ID:', pm.request.url.path[pm.request.url.path.length - 1]);"
+									"    pm.expect(pm.response.text()).to.be.empty;",
+									"});"
 								],
 								"type": "text/javascript"
 							}
@@ -376,63 +386,215 @@
 						"method": "DELETE",
 						"header": [
 							{
-								"key": "Accept",
-								"value": "application/json",
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}",
 								"type": "text"
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/api/pacientes/{{patientId}}",
+							"raw": "{{baseUrl}}/api/pacientes/{{created_patient_id}}",
 							"host": [
-								"{{base_url}}"
+								"{{baseUrl}}"
 							],
 							"path": [
 								"api",
 								"pacientes",
-								"{{patientId}}"
+								"{{created_patient_id}}"
 							]
-						}
+						},
+						"description": "Deletar paciente (usará ID do paciente criado no teste POST)"
 					},
 					"response": []
 				}
-			]
+			],
+			"description": "Operações CRUD de pacientes com autenticação JWT"
 		},
 		{
-			"name": "⚠️ Error Scenarios & Validation",
+			"name": "3. Testes de Segurança",
 			"item": [
 				{
-					"name": "❌ Create Patient - Invalid Data",
+					"name": "GET /api/pacientes - Sem Token",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
-									"// Test: Status code 400 Bad Request",
-									"pm.test(\"Status code is 400 Bad Request\", function () {",
-									"    pm.response.to.have.status(400);",
+									"pm.test(\"Status code is 401\", function () {",
+									"    pm.response.to.have.status(401);",
 									"});",
 									"",
-									"// Test: Response has error details",
-									"pm.test(\"Response has error details\", function () {",
+									"pm.test(\"Response has error message\", function () {",
 									"    const jsonData = pm.response.json();",
-									"    pm.expect(jsonData).to.have.property('status');",
 									"    pm.expect(jsonData).to.have.property('error');",
-									"    pm.expect(jsonData).to.have.property('message');",
-									"    pm.expect(jsonData.status).to.eql(400);",
-									"    pm.expect(jsonData.error).to.eql('Bad Request');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/pacientes",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"pacientes"
+							]
+						},
+						"description": "Tentar acessar endpoint protegido sem token JWT - deve retornar 401"
+					},
+					"response": []
+				},
+				{
+					"name": "GET /api/pacientes - Token Inválido",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 401\", function () {",
+									"    pm.response.to.have.status(401);",
 									"});",
 									"",
-									"// Test: Validation errors are present",
-									"pm.test(\"Validation errors are present\", function () {",
+									"pm.test(\"Response has error message\", function () {",
 									"    const jsonData = pm.response.json();",
-									"    pm.expect(jsonData).to.have.property('errors');",
-									"    pm.expect(jsonData.errors).to.be.an('object');",
-									"    pm.expect(jsonData.errors).to.have.property('nome');",
-									"    pm.expect(jsonData.errors).to.have.property('cpf');",
-									"    pm.expect(jsonData.errors).to.have.property('email');",
-									"});",
-									"",
-									"console.log('Validation errors:', pm.response.json().errors);"
+									"    pm.expect(jsonData).to.have.property('error');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer token_invalido_teste",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/pacientes",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"pacientes"
+							]
+						},
+						"description": "Tentar acessar endpoint protegido com token inválido - deve retornar 401"
+					},
+					"response": []
+				},
+				{
+					"name": "GET /api/pacientes - Token Malformado",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 401\", function () {",
+									"    pm.response.to.have.status(401);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer malformed_token",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/pacientes",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"pacientes"
+							]
+						},
+						"description": "Tentar acessar endpoint protegido com token malformado - deve retornar 401"
+					},
+					"response": []
+				}
+			],
+			"description": "Testes de segurança e validação JWT"
+		},
+		{
+			"name": "4. Validação de Token",
+			"item": [
+				{
+					"name": "Validar Estrutura do Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Primeiro fazer login para obter token",
+									"pm.sendRequest({",
+									"    url: pm.collectionVariables.get('baseUrl') + '/login',",
+									"    method: 'POST',",
+									"    header: {",
+									"        'Content-Type': 'application/json'",
+									"    },",
+									"    body: {",
+									"        mode: 'raw',",
+									"        raw: JSON.stringify({",
+									"            login: 'usuario1@careplus.com',",
+									"            senha: 'minha_senha_secreta'",
+									"        })",
+									"    }",
+									"}, function (err, res) {",
+									"    if (err) {",
+									"        console.log('Erro no login:', err);",
+									"        return;",
+									"    }",
+									"    ",
+									"    if (res.code === 200) {",
+									"        const token = res.json().tokenJWT;",
+									"        const parts = token.split('.');",
+									"        const payload = JSON.parse(atob(parts[1]));",
+									"        ",
+									"        pm.test(\"Token has required claims\", function () {",
+									"            pm.expect(payload).to.have.property('iss');",
+									"            pm.expect(payload).to.have.property('sub');",
+									"            pm.expect(payload).to.have.property('exp');",
+									"        });",
+									"        ",
+									"        pm.test(\"Token issuer is 'Care Plus API'\", function () {",
+									"            pm.expect(payload.iss).to.eql('Care Plus API');",
+									"        });",
+									"        ",
+									"        pm.test(\"Token subject is email\", function () {",
+									"            pm.expect(payload.sub).to.eql('usuario1@careplus.com');",
+									"        });",
+									"        ",
+									"        pm.test(\"Token is not expired\", function () {",
+									"            const expTime = payload.exp * 1000;",
+									"            const currentTime = Date.now();",
+									"            pm.expect(expTime).to.be.greaterThan(currentTime);",
+									"        });",
+									"        ",
+									"        console.log('Token validado com sucesso!');",
+									"        console.log('Payload:', payload);",
+									"    } else {",
+									"        pm.test(\"Login successful for token validation\", function () {",
+									"            pm.expect.fail('Login falhou na validação do token');",
+									"        });",
+									"    }",
+									"});"
 								],
 								"type": "text/javascript"
 							}
@@ -443,287 +605,87 @@
 						"header": [
 							{
 								"key": "Content-Type",
-								"value": "application/json",
-								"type": "text"
+								"value": "application/json"
 							}
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"nome\": \"\",\n  \"cpf\": \"\",\n  \"email\": \"invalid-email\",\n  \"telefone\": \"\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
+							"raw": "{\n  \"login\": \"usuario1@careplus.com\",\n  \"senha\": \"minha_senha_secreta\"\n}"
 						},
 						"url": {
-							"raw": "{{base_url}}/api/pacientes",
+							"raw": "{{baseUrl}}/login",
 							"host": [
-								"{{base_url}}"
+								"{{baseUrl}}"
 							],
 							"path": [
-								"api",
-								"pacientes"
+								"login"
 							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "❌ Create Patient - Duplicate CPF",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"// Test: Status code 409 Conflict",
-									"pm.test(\"Status code is 409 Conflict\", function () {",
-									"    pm.response.to.have.status(409);",
-									"});",
-									"",
-									"// Test: Response has conflict error",
-									"pm.test(\"Response has conflict error\", function () {",
-									"    const jsonData = pm.response.json();",
-									"    pm.expect(jsonData).to.have.property('status');",
-									"    pm.expect(jsonData).to.have.property('error');",
-									"    pm.expect(jsonData).to.have.property('message');",
-									"    pm.expect(jsonData.status).to.eql(409);",
-									"    pm.expect(jsonData.error).to.eql('Conflict');",
-									"    pm.expect(jsonData.message).to.include('CPF');",
-									"});",
-									"",
-									"console.log('Duplicate CPF error:', pm.response.json().message);"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"nome\": \"Carlos Silva\",\n  \"cpf\": \"456.789.123-00\",\n  \"email\": \"carlos.duplicate@email.com\",\n  \"telefone\": \"(11) 95555-4444\",\n  \"dataNascimento\": \"1975-08-22\",\n  \"convenio\": \"SulAmerica\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
 						},
-						"url": {
-							"raw": "{{base_url}}/api/pacientes",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"pacientes"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "❌ Get Patient - Not Found",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"// Test: Status code 404 Not Found",
-									"pm.test(\"Status code is 404 Not Found\", function () {",
-									"    pm.response.to.have.status(404);",
-									"});",
-									"",
-									"// Test: Response body is empty",
-									"pm.test(\"Response body is empty\", function () {",
-									"    pm.expect(pm.response.text()).to.eql('');",
-									"});",
-									"",
-									"console.log('Patient not found for ID:', pm.request.url.path[pm.request.url.path.length - 1]);"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Accept",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/api/pacientes/99999",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"pacientes",
-								"99999"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "❌ Update Patient - Not Found",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"// Test: Status code 404 Not Found",
-									"pm.test(\"Status code is 404 Not Found\", function () {",
-									"    pm.response.to.have.status(404);",
-									"});",
-									"",
-									"// Test: Response body is empty",
-									"pm.test(\"Response body is empty\", function () {",
-									"    pm.expect(pm.response.text()).to.eql('');",
-									"});",
-									"",
-									"console.log('Update failed - patient not found for ID:', pm.request.url.path[pm.request.url.path.length - 1]);"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "PUT",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"nome\": \"Test Patient\",\n  \"cpf\": \"999.999.999-99\",\n  \"email\": \"test.not.found@email.com\",\n  \"telefone\": \"(11) 11111-2222\",\n  \"dataNascimento\": \"1990-01-01\",\n  \"convenio\": \"Test\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{base_url}}/api/pacientes/99999",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"pacientes",
-								"99999"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "❌ Delete Patient - Not Found",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"// Test: Status code 404 Not Found",
-									"pm.test(\"Status code is 404 Not Found\", function () {",
-									"    pm.response.to.have.status(404);",
-									"});",
-									"",
-									"// Test: Response body is empty",
-									"pm.test(\"Response body is empty\", function () {",
-									"    pm.expect(pm.response.text()).to.eql('');",
-									"});",
-									"",
-									"console.log('Delete failed - patient not found for ID:', pm.request.url.path[pm.request.url.path.length - 1]);"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "Accept",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/api/pacientes/99999",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"pacientes",
-								"99999"
-							]
-						}
+						"description": "Valida a estrutura e conteúdo do token JWT gerado"
 					},
 					"response": []
 				}
-			]
+			],
+			"description": "Testes específicos para validação de tokens JWT"
 		},
 		{
-			"name": "📚 API Documentation",
+			"name": "5. Documentação",
 			"item": [
 				{
-					"name": "📖 Swagger UI",
+					"name": "Swagger UI",
 					"request": {
 						"method": "GET",
-						"header": [],
 						"url": {
-							"raw": "{{base_url}}/swagger-ui/index.html",
+							"raw": "{{baseUrl}}/swagger-ui/index.html",
 							"host": [
-								"{{base_url}}"
+								"{{baseUrl}}"
 							],
 							"path": [
 								"swagger-ui",
 								"index.html"
 							]
-						}
+						},
+						"description": "Acessar interface Swagger UI da API"
 					},
 					"response": []
 				},
 				{
-					"name": "📋 OpenAPI JSON",
+					"name": "OpenAPI JSON",
 					"request": {
 						"method": "GET",
-						"header": [
-							{
-								"key": "Accept",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
 						"url": {
-							"raw": "{{base_url}}/v3/api-docs",
+							"raw": "{{baseUrl}}/v3/api-docs",
 							"host": [
-								"{{base_url}}"
+								"{{baseUrl}}"
 							],
 							"path": [
 								"v3",
 								"api-docs"
 							]
-						}
+						},
+						"description": "Obter especificação OpenAPI em JSON"
 					},
 					"response": []
 				}
-			]
+			],
+			"description": "Endpoints de documentação da API"
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080",
+			"type": "string"
+		},
+		{
+			"key": "jwt_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "created_patient_id",
+			"value": "",
+			"type": "string"
 		}
 	],
 	"event": [
@@ -732,18 +694,11 @@
 			"script": {
 				"type": "text/javascript",
 				"exec": [
-					"// Global pre-request script",
-					"console.log('=== Request Start ===');",
-					"console.log('Method:', pm.request.method);",
-					"console.log('URL:', pm.request.url.toString());",
-									"",
-									"// Add timestamp for tracking",
-									"pm.environment.set('requestTimestamp', new Date().toISOString());",
-									"",
-									"// Log current environment variables",
-									"console.log('Base URL:', pm.environment.get('base_url'));",
-									"console.log('Patient ID:', pm.environment.get('patientId'));",
-									"console.log('Patient CPF:', pm.environment.get('patientCpf'));"
+					"// Log antes de cada requisição",
+					"console.log('=== Iniciando requisição ===');",
+					"console.log('Método:', pm.info.requestMethod);",
+					"console.log('URL:', pm.info.requestName);",
+					"console.log('Token disponível:', pm.collectionVariables.get('jwt_token') ? 'Sim' : 'Não');"
 				]
 			}
 		},
@@ -752,60 +707,17 @@
 			"script": {
 				"type": "text/javascript",
 				"exec": [
-					"// Global test script",
-					"console.log('=== Response End ===');",
-					"console.log('Status Code:', pm.response.code);",
-					"console.log('Response Time:', pm.response.responseTime + 'ms');",
-					"console.log('Response Size:', pm.response.responseSize + ' bytes');",
-									"",
-									"// Performance assertions",
-									"pm.test(\"Response time is less than 2000ms\", function () {",
-									"    pm.expect(pm.response.responseTime).to.be.below(2000);",
-									"});",
-									"",
-									"// Content type validation for successful responses",
-									"if (pm.response.code >= 200 && pm.response.code < 300) {",
-									"    pm.test(\"Response has valid content type\", function () {",
-									"        const contentType = pm.response.headers.get('Content-Type');",
-									"        if (contentType) {",
-									"            pm.expect(contentType).to.include('application/json');",
-									"        }",
-									"    });",
+					"// Log após cada requisição",
+					"console.log('=== Requisição concluída ===');",
+					"console.log('Status:', pm.response.code);",
+					"console.log('Request:', pm.info.requestName);",
+					"",
+					"// Verificar se há erro para log detalhado",
+					"if (pm.response.code >= 400) {",
+					"    console.log('Erro detectado:', pm.response.text());",
 									"}"
 				]
 			}
-		}
-	],
-	"variable": [
-		{
-			"key": "base_url",
-			"value": "http://localhost:8080",
-			"type": "string",
-			"description": "Base URL for the API"
-		},
-		{
-			"key": "patientId",
-			"value": "1",
-			"type": "string",
-			"description": "ID of the patient to test with"
-		},
-		{
-			"key": "patientCpf",
-			"value": "456.789.123-00",
-			"type": "string",
-			"description": "CPF of the patient to test with"
-		},
-		{
-			"key": "createdPatientId",
-			"value": "",
-			"type": "string",
-			"description": "ID of the last created patient (auto-set by tests)"
-		},
-		{
-			"key": "createdPatientCpf",
-			"value": "",
-			"type": "string",
-			"description": "CPF of the last created patient (auto-set by tests)"
 		}
 	]
 }

@@ -1,5 +1,6 @@
 package com.fiap.begin_projetct.service;
 
+import com.fiap.begin_projetct.infra.security.TokenService;
 import com.fiap.begin_projetct.model.Usuario;
 import com.fiap.begin_projetct.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
@@ -13,7 +14,7 @@ import java.util.List;
 public class SessionService {
 
     private final UsuarioRepository usuarioRepository;
-    private final JwtService jwtService;
+    private final TokenService tokenService;
 
     public boolean validarSessao(String email) {
         return usuarioRepository.findByEmail(email)
@@ -22,8 +23,9 @@ public class SessionService {
                         return false;
                     }
 
-                    // Verificar expiração da sessão
-                    if (jwtService.isSessionExpired(usuario.getUltimoAcesso())) {
+                    // Verificar expiração da sessão (30 minutos de inatividade)
+                    LocalDateTime limiteExpiracao = usuario.getUltimoAcesso().plusMinutes(30);
+                    if (LocalDateTime.now().isAfter(limiteExpiracao)) {
                         usuarioRepository.invalidarSessao(usuario.getId());
                         return false;
                     }

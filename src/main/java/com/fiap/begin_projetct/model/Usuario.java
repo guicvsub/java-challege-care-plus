@@ -10,15 +10,20 @@ import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.Collections;
 
 @Entity
 @Table(name = "usuarios")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Usuario {
+public class Usuario implements UserDetails {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,10 +36,10 @@ public class Usuario {
     private String email;
     
     @NotBlank(message = "Senha é obrigatória")
-    @Size(min = 8, max = 32, message = "Senha deve ter entre 8 e 32 caracteres")
+    @Size(min = 8, max = 60, message = "Senha deve ter entre 8 e 60 caracteres")
     @Pattern(regexp = "^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,32}$",
              message = "Senha deve conter: 1 letra maiúscula, 1 letra minúscula, 1 número e 1 caractere especial")
-    @Column(nullable = false, length = 32)
+    @Column(nullable = false, length = 60)
     private String senha;
     
     @Column(name = "ultimo_acesso")
@@ -53,4 +58,41 @@ public class Usuario {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"));
+    }
+
+    @Override
+    public String getPassword() {
+        return senha;
+    }
+
+    @Override
+    public String getUsername() {
+        return email;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        // Usuário está sempre habilitado para login, independente do status da sessão
+        // A sessão é ativada/desativada pelo fluxo de autenticação
+        return true;
+    }
 }
