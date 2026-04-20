@@ -31,3 +31,32 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Postman Files ###
+*.postman_collection.json
+*.postman_environment.json
+POSTMAN-*.md
+
+### Test Files ###
+login_test.json
+*.test.json
+test_*.json
+
+### OS Generated Files ###
+*.sh
+*.bat
+*.cmd
+*.dll
+*.exe
+*.so
+*.dylib
+
+### Logs ###
+*.log
+logs/
+
+### Temporary Files ###
+*.tmp
+*.temp
+.DS_Store
+Thumbs.db
