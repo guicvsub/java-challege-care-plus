@@ -1,5 +1,6 @@
 package com.fiap.begin_projetct.controller;
 
+import com.fiap.begin_projetct.dto.CriarPlannedMealRequest;
 import com.fiap.begin_projetct.model.PlannedMeal;
 import com.fiap.begin_projetct.service.PlannedMealService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -21,7 +22,6 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api/planned-meals")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*")
 @Tag(name = "Refeições Planejadas", description = "API para gerenciamento de refeições planejadas")
 public class PlannedMealController {
     
@@ -119,14 +119,10 @@ public class PlannedMealController {
         @ApiResponse(responseCode = "201", description = "Refeição planejada criada com sucesso"),
         @ApiResponse(responseCode = "400", description = "Dados inválidos")
     })
-    public ResponseEntity<PlannedMeal> criarComIds(@RequestBody Map<String, Object> request) {
-        Long planoId = ((Number) request.get("planoId")).longValue();
-        Long refeicaoId = ((Number) request.get("refeicaoId")).longValue();
-        LocalDate dataPlanejada = LocalDate.parse(request.get("dataPlanejada").toString());
-        String tipoRefeicao = request.get("tipoRefeicao").toString();
-        
+    public ResponseEntity<PlannedMeal> criarComIds(@Valid @RequestBody CriarPlannedMealRequest request) {
         PlannedMeal novaPlannedMeal = plannedMealService.criarRefeicaoPlanejada(
-            planoId, refeicaoId, dataPlanejada, tipoRefeicao);
+            request.getPlanoId(), request.getRefeicaoId(), 
+            request.getDataPlanejada(), request.getTipoRefeicao());
         return ResponseEntity.status(HttpStatus.CREATED).body(novaPlannedMeal);
     }
     

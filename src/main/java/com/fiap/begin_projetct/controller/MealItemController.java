@@ -1,5 +1,6 @@
 package com.fiap.begin_projetct.controller;
 
+import com.fiap.begin_projetct.dto.CriarMealItemRequest;
 import com.fiap.begin_projetct.model.MealItem;
 import com.fiap.begin_projetct.service.MealItemService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -19,7 +20,6 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api/meal-items")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*")
 @Tag(name = "Itens de Refeição", description = "API para gerenciamento de itens de refeição")
 public class MealItemController {
     
@@ -96,12 +96,9 @@ public class MealItemController {
         @ApiResponse(responseCode = "201", description = "Item criado com sucesso"),
         @ApiResponse(responseCode = "400", description = "Dados inválidos")
     })
-    public ResponseEntity<MealItem> criarComIds(@RequestBody Map<String, Object> request) {
-        Long refeicaoId = ((Number) request.get("refeicaoId")).longValue();
-        Long alimentoId = ((Number) request.get("alimentoId")).longValue();
-        Double quantidade = ((Number) request.get("quantidade")).doubleValue();
-        
-        MealItem novoItem = mealItemService.criarItem(refeicaoId, alimentoId, quantidade);
+    public ResponseEntity<MealItem> criarComIds(@Valid @RequestBody CriarMealItemRequest request) {
+        MealItem novoItem = mealItemService.criarItem(
+            request.getRefeicaoId(), request.getAlimentoId(), request.getQuantidade());
         return ResponseEntity.status(HttpStatus.CREATED).body(novoItem);
     }
     

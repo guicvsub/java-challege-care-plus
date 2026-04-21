@@ -1,5 +1,6 @@
 package com.fiap.begin_projetct.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDate;
@@ -38,6 +39,8 @@ public class DietPlan {
     @Column(name = "target_fats", nullable = false)
     private Double targetFats;
     
+    @JsonManagedReference
+    @ToString.Exclude
     @OneToMany(mappedBy = "dietPlan", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private java.util.List<PlannedMeal> plannedMeals;
     

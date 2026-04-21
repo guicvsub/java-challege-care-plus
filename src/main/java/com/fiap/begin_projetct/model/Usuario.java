@@ -1,9 +1,10 @@
 package com.fiap.begin_projetct.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -35,19 +36,19 @@ public class Usuario implements UserDetails {
     @Column(nullable = false, unique = true, length = 255)
     private String email;
     
-    @NotBlank(message = "Senha é obrigatória")
-    @Size(min = 8, max = 60, message = "Senha deve ter entre 8 e 60 caracteres")
-    @Pattern(regexp = "^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,32}$",
-             message = "Senha deve conter: 1 letra maiúscula, 1 letra minúscula, 1 número e 1 caractere especial")
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @Column(nullable = false, length = 60)
     private String senha;
     
+    @JsonIgnore
     @Column(name = "ultimo_acesso")
     private LocalDateTime ultimoAcesso;
     
+    @JsonIgnore
     @Column(name = "token_expiracao")
     private LocalDateTime tokenExpiracao;
     
+    @JsonIgnore
     @Column(name = "sessao_ativa")
     private Boolean sessaoAtiva = false;
     
@@ -59,36 +60,43 @@ public class Usuario implements UserDetails {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @JsonIgnore
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"));
     }
 
+    @JsonIgnore
     @Override
     public String getPassword() {
         return senha;
     }
 
+    @JsonIgnore
     @Override
     public String getUsername() {
         return email;
     }
 
+    @JsonIgnore
     @Override
     public boolean isAccountNonExpired() {
         return true;
     }
 
+    @JsonIgnore
     @Override
     public boolean isAccountNonLocked() {
         return true;
     }
 
+    @JsonIgnore
     @Override
     public boolean isCredentialsNonExpired() {
         return true;
     }
 
+    @JsonIgnore
     @Override
     public boolean isEnabled() {
         // Usuário está sempre habilitado para login, independente do status da sessão

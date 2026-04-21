@@ -22,7 +22,6 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api/meals")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*")
 @Tag(name = "Refeições", description = "API para gerenciamento de refeições")
 public class MealController {
     

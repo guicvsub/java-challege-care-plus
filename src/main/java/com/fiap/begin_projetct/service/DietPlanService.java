@@ -79,8 +79,8 @@ public class DietPlanService {
         customMeal.setMealDate(plannedDate.atStartOfDay());
         customMeal.setIsPreset(false);
         
-        // Adicionar itens (implementar lógica similar ao MealService)
-        // ...
+        // Salvar a refeição antes de associá-la ao PlannedMeal
+        customMeal = mealRepository.save(customMeal);
         
         PlannedMeal plannedMeal = new PlannedMeal();
         plannedMeal.setDietPlan(plan);
@@ -158,7 +158,7 @@ public class DietPlanService {
         }
         
         DietPlan planoAtualizado = planoExistente.get();
-        planoAtualizado.setPatient(dietPlan.getPatient());
+        // Manter o paciente original — não permitir troca de paciente
         planoAtualizado.setStartDate(dietPlan.getStartDate());
         planoAtualizado.setEndDate(dietPlan.getEndDate());
         planoAtualizado.setTargetCalories(dietPlan.getTargetCalories());

@@ -20,7 +20,6 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api/usuarios")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*")
 @Tag(name = "Usuários", description = "API para gerenciamento de usuários e autenticação")
 public class UsuarioController {
     
@@ -70,23 +69,7 @@ public class UsuarioController {
         return ResponseEntity.status(HttpStatus.CREATED).body(novoUsuario);
     }
     
-    @PostMapping("/login")
-    @Operation(summary = "Autenticar usuário", description = "Realiza login do usuário e retorna token JWT")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Login realizado com sucesso"),
-        @ApiResponse(responseCode = "400", description = "Email ou senha inválidos")
-    })
-    public ResponseEntity<Map<String, String>> login(@RequestBody Map<String, String> loginRequest) {
-        String email = loginRequest.get("email");
-        String senha = loginRequest.get("senha");
-        
-        String token = usuarioService.autenticar(email, senha);
-        
-        return ResponseEntity.ok(Map.of(
-            "token", token,
-            "message", "Login realizado com sucesso"
-        ));
-    }
+    
     
     @PostMapping("/logout")
     @Operation(summary = "Realizar logout", description = "Desativa a sessão do usuário")

@@ -15,14 +15,17 @@ public class FoodLog {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
+    @ToString.Exclude
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "patient_id", nullable = false)
     private Paciente patient;
     
+    @ToString.Exclude
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "meal_id", nullable = false)
     private Meal meal;
     
+    @ToString.Exclude
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "food_id", nullable = false)
     private Food food;
@@ -63,6 +66,11 @@ public class FoodLog {
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
+        calculateTotals();
+    }
+    
+    @PreUpdate
+    protected void onUpdate() {
         calculateTotals();
     }
     

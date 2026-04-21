@@ -23,7 +23,6 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api/diet-plans")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*")
 @Tag(name = "Planos Alimentares", description = "API para gerenciamento de planos alimentares")
 public class DietPlanController {
     

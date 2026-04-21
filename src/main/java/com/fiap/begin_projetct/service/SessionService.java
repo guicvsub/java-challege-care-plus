@@ -5,12 +5,14 @@ import com.fiap.begin_projetct.model.Usuario;
 import com.fiap.begin_projetct.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class SessionService {
 
     private final UsuarioRepository usuarioRepository;
@@ -43,7 +45,7 @@ public class SessionService {
     }
 
     public void limparSessoesExpiradas() {
-        LocalDateTime limite = LocalDateTime.now().minusMinutes(1);
+        LocalDateTime limite = LocalDateTime.now().minusMinutes(30);
         List<Usuario> sessoesExpiradas = usuarioRepository.findSessoesInativas(limite);
         
         sessoesExpiradas.forEach(usuario -> 

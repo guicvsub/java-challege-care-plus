@@ -21,7 +21,6 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api/food-logs")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*")
 @Tag(name = "Logs de Consumo", description = "API para gerenciamento de logs de consumo alimentar")
 public class FoodLogController {
     
@@ -165,6 +164,10 @@ public class FoodLogController {
         @ApiResponse(responseCode = "404", description = "Log não encontrado")
     })
     public ResponseEntity<FoodLog> atualizar(@PathVariable Long id, @Valid @RequestBody FoodLog foodLog) {
+        if (!foodLogService.buscarPorId(id).isPresent()) {
+            return ResponseEntity.notFound().build();
+        }
+        foodLog.setId(id);
         FoodLog logAtualizado = foodLogService.salvar(foodLog);
         return ResponseEntity.ok(logAtualizado);
     }

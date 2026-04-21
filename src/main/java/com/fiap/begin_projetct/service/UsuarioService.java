@@ -6,6 +6,7 @@ import com.fiap.begin_projetct.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -13,6 +14,7 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class UsuarioService {
     
     private final UsuarioRepository usuarioRepository;
@@ -22,6 +24,7 @@ public class UsuarioService {
     /**
      * Listar todos os usuários
      */
+    @Transactional(readOnly = true)
     public List<Usuario> listarTodos() {
         return usuarioRepository.findAll();
     }
@@ -29,6 +32,7 @@ public class UsuarioService {
     /**
      * Buscar usuário por ID
      */
+    @Transactional(readOnly = true)
     public Optional<Usuario> buscarPorId(Long id) {
         return usuarioRepository.findById(id);
     }
@@ -36,6 +40,7 @@ public class UsuarioService {
     /**
      * Buscar usuário por email
      */
+    @Transactional(readOnly = true)
     public Optional<Usuario> buscarPorEmail(String email) {
         return usuarioRepository.findByEmail(email);
     }
@@ -129,6 +134,7 @@ public class UsuarioService {
     /**
      * Verificar se usuário existe por email
      */
+    @Transactional(readOnly = true)
     public boolean existsByEmail(String email) {
         return usuarioRepository.existsByEmail(email);
     }

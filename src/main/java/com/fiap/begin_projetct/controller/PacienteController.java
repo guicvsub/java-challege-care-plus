@@ -18,7 +18,6 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api/pacientes")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*")
 @Tag(name = "Pacientes", description = "API para gerenciamento de pacientes")
 public class PacienteController {
     
