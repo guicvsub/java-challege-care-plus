@@ -24,6 +24,11 @@ public class Paciente {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
+    // Constructor for service layer when only ID is known
+    public Paciente(Long id) {
+        this.id = id;
+    }
+    
     @NotBlank(message = "Nome é obrigatório")
     @Size(max = 255, message = "Nome deve ter no máximo 255 caracteres")
     @Column(nullable = false)
