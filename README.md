@@ -97,7 +97,26 @@ src/main/java/com/fiap/begin_projetct/
 - **URL**: jdbc:mysql://localhost:3306/care_plus_db
 - **DDL Auto**: update (cria/atualiza tabelas automaticamente)
 
+## Como Rodar o Projeto
+
+### Pré-requisitos
+- MySQL rodando (usuário: `root`, senha: `0000`)
+- Banco `care_plus_db` criado
+
+### Comando para Iniciar (Windows - PowerShell)
+```powershell
+$env:JWT_TOKEN="care-plus-secret-key-2024"; .\mvnw.cmd spring-boot:run
+```
+
+### Comando para Iniciar (Linux/Mac)
+```bash
+JWT_TOKEN="care-plus-secret-key-2024" ./mvnw spring-boot:run
+```
+
+> **Nota:** A aplicação roda por padrão na porta `8080`. O Swagger está disponível em `http://localhost:8080/swagger-ui.html`.
+
 ## Arquivos do Projeto
 - `Requisitos e regras sprint01.pdf` - **DOCUMENTO DE REQUISITOS**
 - `Sprint01_Testing.pdf` - **DOCUMENTO DE TESTES**
+- `Care-Plus-API.postman_collection.json` - **COLEÇÃO POSTMAN ATUALIZADA**
 - `README.md` - Este arquivo de visão geral

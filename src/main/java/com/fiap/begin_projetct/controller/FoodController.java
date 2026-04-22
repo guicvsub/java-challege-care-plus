@@ -19,13 +19,14 @@ import java.util.Optional;
 @RequestMapping("/api/foods")
 @RequiredArgsConstructor
 @Tag(name = "Alimentos", description = "API para gerenciamento de alimentos")
-public class FoodController {
+public class FoodController implements CrudController<Food, Long, Food, Food> {
     
     private final FoodService foodService;
     
     @GetMapping
     @Operation(summary = "Listar todos os alimentos", description = "Retorna uma lista com todos os alimentos cadastrados")
     @ApiResponse(responseCode = "200", description = "Lista de alimentos retornada com sucesso")
+    @Override
     public ResponseEntity<List<Food>> listarTodos() {
         List<Food> foods = foodService.listarTodos();
         return ResponseEntity.ok(foods);
@@ -37,6 +38,7 @@ public class FoodController {
         @ApiResponse(responseCode = "200", description = "Alimento encontrado com sucesso"),
         @ApiResponse(responseCode = "404", description = "Alimento não encontrado")
     })
+    @Override
     public ResponseEntity<Food> buscarPorId(@PathVariable Long id) {
         Optional<Food> food = foodService.buscarPorId(id);
         return food.map(ResponseEntity::ok)
@@ -71,6 +73,7 @@ public class FoodController {
         @ApiResponse(responseCode = "201", description = "Alimento criado com sucesso"),
         @ApiResponse(responseCode = "400", description = "Dados inválidos ou alimento já existe")
     })
+    @Override
     public ResponseEntity<Food> criar(@Valid @RequestBody Food food) {
         Food novoFood = foodService.salvar(food);
         return ResponseEntity.status(HttpStatus.CREATED).body(novoFood);
@@ -83,6 +86,7 @@ public class FoodController {
         @ApiResponse(responseCode = "400", description = "Dados inválidos"),
         @ApiResponse(responseCode = "404", description = "Alimento não encontrado")
     })
+    @Override
     public ResponseEntity<Food> atualizar(@PathVariable Long id, @Valid @RequestBody Food food) {
         Food foodAtualizado = foodService.atualizar(id, food);
         return ResponseEntity.ok(foodAtualizado);
@@ -94,6 +98,7 @@ public class FoodController {
         @ApiResponse(responseCode = "204", description = "Alimento deletado com sucesso"),
         @ApiResponse(responseCode = "404", description = "Alimento não encontrado")
     })
+    @Override
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
         foodService.deletar(id);
         return ResponseEntity.noContent().build();

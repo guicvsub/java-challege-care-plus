@@ -1,8 +1,9 @@
 package com.fiap.begin_projetct.controller;
 
+import com.fiap.begin_projetct.dto.RegistrarConsumoRequest;
 import com.fiap.begin_projetct.model.FoodLog;
-import com.fiap.begin_projetct.service.FoodLogService;
 import com.fiap.begin_projetct.service.CreateMealRequest;
+import com.fiap.begin_projetct.service.FoodLogService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -22,164 +23,158 @@ import java.util.Optional;
 @RequestMapping("/api/food-logs")
 @RequiredArgsConstructor
 @Tag(name = "Logs de Consumo", description = "API para gerenciamento de logs de consumo alimentar")
-public class FoodLogController {
-    
+public class FoodLogController implements CrudController<FoodLog, Long, RegistrarConsumoRequest, FoodLog> {
+
     private final FoodLogService foodLogService;
-    
+
     @GetMapping
     @Operation(summary = "Listar todos os logs de consumo", description = "Retorna uma lista com todos os logs de consumo cadastrados")
     @ApiResponse(responseCode = "200", description = "Lista de logs retornada com sucesso")
+    @Override
     public ResponseEntity<List<FoodLog>> listarTodos() {
-        List<FoodLog> logs = foodLogService.listarTodos();
-        return ResponseEntity.ok(logs);
+        return ResponseEntity.ok(foodLogService.listarTodos());
     }
-    
+
     @GetMapping("/{id}")
     @Operation(summary = "Buscar log por ID", description = "Retorna um log específico pelo seu ID")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Log encontrado com sucesso"),
         @ApiResponse(responseCode = "404", description = "Log não encontrado")
     })
+    @Override
     public ResponseEntity<FoodLog> buscarPorId(@PathVariable Long id) {
         Optional<FoodLog> log = foodLogService.buscarPorId(id);
-        return log.map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        return log.map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
-    
+
     @GetMapping("/paciente/{pacienteId}")
     @Operation(summary = "Buscar logs por paciente", description = "Retorna todos os logs de consumo de um paciente específico")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Logs encontrados com sucesso")
-    })
+    @ApiResponse(responseCode = "200", description = "Logs encontrados com sucesso")
     public ResponseEntity<List<FoodLog>> buscarPorPaciente(@PathVariable Long pacienteId) {
-        List<FoodLog> logs = foodLogService.getConsumptionHistory(pacienteId);
-        return ResponseEntity.ok(logs);
+        return ResponseEntity.ok(foodLogService.getConsumptionHistory(pacienteId));
     }
-    
+
     @GetMapping("/paciente/{pacienteId}/periodo")
     @Operation(summary = "Buscar logs por paciente e período", description = "Retorna os logs de consumo de um paciente em um período específico")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Logs encontrados com sucesso")
-    })
+    @ApiResponse(responseCode = "200", description = "Logs encontrados com sucesso")
     public ResponseEntity<List<FoodLog>> buscarPorPacienteEPeriodo(
             @PathVariable Long pacienteId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dataInicio,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dataFim) {
-        List<FoodLog> logs = foodLogService.getConsumptionByDate(pacienteId, dataInicio, dataFim);
-        return ResponseEntity.ok(logs);
+        return ResponseEntity.ok(foodLogService.getConsumptionByDate(pacienteId, dataInicio, dataFim));
     }
-    
+
     @GetMapping("/paciente/{pacienteId}/data")
     @Operation(summary = "Buscar logs por paciente e data específica", description = "Retorna os logs de consumo de um paciente em uma data específica")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Logs encontrados com sucesso")
-    })
+    @ApiResponse(responseCode = "200", description = "Logs encontrados com sucesso")
     public ResponseEntity<List<FoodLog>> buscarPorPacienteEData(
             @PathVariable Long pacienteId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime data) {
-        List<FoodLog> logs = foodLogService.getConsumptionBySpecificDate(pacienteId, data);
-        return ResponseEntity.ok(logs);
+        return ResponseEntity.ok(foodLogService.getConsumptionBySpecificDate(pacienteId, data));
     }
-    
+
     @GetMapping("/paciente/{pacienteId}/planejados")
     @Operation(summary = "Buscar consumo planejado por paciente", description = "Retorna todos os logs de consumo planejado de um paciente")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Logs encontrados com sucesso")
-    })
+    @ApiResponse(responseCode = "200", description = "Logs encontrados com sucesso")
     public ResponseEntity<List<FoodLog>> buscarConsumoPlanejadoPorPaciente(@PathVariable Long pacienteId) {
-        List<FoodLog> logs = foodLogService.getPlannedConsumptionByPatient(pacienteId);
-        return ResponseEntity.ok(logs);
+        return ResponseEntity.ok(foodLogService.getPlannedConsumptionByPatient(pacienteId));
     }
-    
+
     @GetMapping("/paciente/{pacienteId}/calorias")
     @Operation(summary = "Obter total de calorias consumidas", description = "Retorna o total de calorias consumidas por um paciente em uma data específica")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Total de calorias calculado com sucesso")
-    })
+    @ApiResponse(responseCode = "200", description = "Total de calorias calculado com sucesso")
     public ResponseEntity<Integer> getTotalCalorias(
             @PathVariable Long pacienteId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime data) {
-        Integer totalCalorias = foodLogService.getTotalCaloriesByPatientAndDate(pacienteId, data);
-        return ResponseEntity.ok(totalCalorias);
+        return ResponseEntity.ok(foodLogService.getTotalCaloriesByPatientAndDate(pacienteId, data));
     }
-    
-    @PostMapping("/paciente/{pacienteId}/preset")
-    @Operation(summary = "Registrar consumo baseado em preset", description = "Registra o consumo de um alimento baseado em uma refeição planejada")
+
+    /**
+     * POST único — substitui os 3 POSTs anteriores (preset, custom, raw).
+     * Usa o campo {@code tipo} do DTO para discriminar o fluxo de negócio.
+     */
+    @PostMapping("/paciente/{pacienteId}")
+    @Operation(
+        summary = "Registrar consumo alimentar",
+        description = "Registra o consumo de um paciente. Use o campo `tipo`:\n" +
+                      "- **PRESET**: consumo baseado em refeição existente (requer mealId e foodId)\n" +
+                      "- **CUSTOM**: cria refeição na hora e registra o consumo\n" +
+                      "- **DIRETO**: registra alimento diretamente sem refeição associada"
+    )
     @ApiResponses(value = {
         @ApiResponse(responseCode = "201", description = "Consumo registrado com sucesso"),
-        @ApiResponse(responseCode = "400", description = "Dados inválidos")
+        @ApiResponse(responseCode = "400", description = "Dados inválidos ou tipo não suportado")
     })
-    public ResponseEntity<FoodLog> registrarConsumoPreset(
+    public ResponseEntity<FoodLog> registrarConsumo(
             @PathVariable Long pacienteId,
-            @RequestParam Long mealId,
-            @RequestParam Long foodId,
-            @RequestParam Double quantity) {
-        FoodLog log = foodLogService.logConsumptionFromPreset(pacienteId, mealId, foodId, quantity);
+            @Valid @RequestBody RegistrarConsumoRequest request) {
+        FoodLog log = switch (request.getTipo()) {
+            case PRESET -> foodLogService.logConsumptionFromPreset(
+                pacienteId, request.getMealId(), request.getFoodId(), request.getQuantity());
+            case CUSTOM -> foodLogService.logCustomConsumption(
+                pacienteId, toCreateMealRequest(request.getCustomMeal()));
+            case DIRETO -> foodLogService.logDiretoConsumption(
+                pacienteId, request.getFoodId(), request.getQuantity(), request.getConsumedAt());
+        };
         return ResponseEntity.status(HttpStatus.CREATED).body(log);
     }
-    
-    @PostMapping("/paciente/{pacienteId}/custom")
-    @Operation(summary = "Registrar consumo customizado", description = "Registra o consumo de uma refeição customizada")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "201", description = "Consumo registrado com sucesso"),
-        @ApiResponse(responseCode = "400", description = "Dados inválidos")
-    })
-    public ResponseEntity<FoodLog> registrarConsumoCustomizado(
-            @PathVariable Long pacienteId,
-            @Valid @RequestBody CreateMealRequest mealRequest) {
-        FoodLog log = foodLogService.logCustomConsumption(pacienteId, mealRequest);
-        return ResponseEntity.status(HttpStatus.CREATED).body(log);
+
+    // Implementa o método da interface CrudController — não exposível diretamente;
+    // use POST /paciente/{pacienteId} para registrar consumo.
+    @Override
+    public ResponseEntity<FoodLog> criar(RegistrarConsumoRequest request) {
+        throw new UnsupportedOperationException("Use POST /api/food-logs/paciente/{pacienteId}");
     }
-    
-    @PostMapping
-    @Operation(summary = "Criar novo log de consumo", description = "Cadastra um novo log de consumo no sistema")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "201", description = "Log criado com sucesso"),
-        @ApiResponse(responseCode = "400", description = "Dados inválidos")
-    })
-    public ResponseEntity<FoodLog> criar(@Valid @RequestBody FoodLog foodLog) {
-        FoodLog novoLog = foodLogService.salvar(foodLog);
-        return ResponseEntity.status(HttpStatus.CREATED).body(novoLog);
-    }
-    
+
     @PutMapping("/{id}/quantidade")
     @Operation(summary = "Atualizar quantidade consumida", description = "Atualiza a quantidade de um log de consumo existente")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Quantidade atualizada com sucesso"),
-        @ApiResponse(responseCode = "400", description = "Dados inválidos"),
         @ApiResponse(responseCode = "404", description = "Log não encontrado")
     })
     public ResponseEntity<FoodLog> atualizarQuantidade(
             @PathVariable Long id,
             @RequestParam Double newQuantity) {
-        FoodLog logAtualizado = foodLogService.updateConsumption(id, newQuantity);
-        return ResponseEntity.ok(logAtualizado);
+        return ResponseEntity.ok(foodLogService.updateConsumption(id, newQuantity));
     }
-    
+
     @PutMapping("/{id}")
     @Operation(summary = "Atualizar log de consumo", description = "Atualiza os dados de um log de consumo existente")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Log atualizado com sucesso"),
-        @ApiResponse(responseCode = "400", description = "Dados inválidos"),
         @ApiResponse(responseCode = "404", description = "Log não encontrado")
     })
+    @Override
     public ResponseEntity<FoodLog> atualizar(@PathVariable Long id, @Valid @RequestBody FoodLog foodLog) {
-        if (!foodLogService.buscarPorId(id).isPresent()) {
+        if (foodLogService.buscarPorId(id).isEmpty()) {
             return ResponseEntity.notFound().build();
         }
         foodLog.setId(id);
-        FoodLog logAtualizado = foodLogService.salvar(foodLog);
-        return ResponseEntity.ok(logAtualizado);
+        return ResponseEntity.ok(foodLogService.salvar(foodLog));
     }
-    
+
     @DeleteMapping("/{id}")
     @Operation(summary = "Deletar log de consumo", description = "Remove um log de consumo do sistema pelo seu ID")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "204", description = "Log deletado com sucesso"),
-        @ApiResponse(responseCode = "404", description = "Log não encontrado")
-    })
+    @ApiResponse(responseCode = "204", description = "Log deletado com sucesso")
+    @Override
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
         foodLogService.deletar(id);
         return ResponseEntity.noContent().build();
+    }
+
+    private CreateMealRequest toCreateMealRequest(RegistrarConsumoRequest.CreateMealRequestBody body) {
+        if (body == null) {
+            throw new IllegalArgumentException("customMeal é obrigatório para tipo CUSTOM");
+        }
+        CreateMealRequest req = new CreateMealRequest();
+        req.setName(body.getName());
+        req.setItems(body.getItems().stream()
+            .map(i -> {
+                CreateMealRequest.FoodItemRequest fi = new CreateMealRequest.FoodItemRequest();
+                fi.setFoodName(i.getFoodName());
+                fi.setQuantity(i.getQuantity());
+                return fi;
+            }).toList());
+        return req;
     }
 }

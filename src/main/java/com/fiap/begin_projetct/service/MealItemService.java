@@ -108,36 +108,34 @@ public class MealItemService {
     }
     
     /**
-     * Atualizar item de refeição
+     * Atualizar item de refeição por entidade (uso interno/legado).
      */
     public MealItem atualizar(Long id, MealItem mealItem) {
-        Optional<MealItem> itemExistente = mealItemRepository.findById(id);
-        if (itemExistente.isEmpty()) {
-            throw new IllegalArgumentException("Item de refeição não encontrado com ID: " + id);
-        }
-        
-        // Validar se a refeição existe
-        if (mealItem.getMeal() != null && mealItem.getMeal().getId() != null) {
-            if (!mealRepository.existsById(mealItem.getMeal().getId())) {
-                throw new IllegalArgumentException("Refeição não encontrada com ID: " + mealItem.getMeal().getId());
-            }
-        }
-        
-        // Validar se o alimento existe
-        if (mealItem.getFood() != null && mealItem.getFood().getId() != null) {
-            if (!foodRepository.existsById(mealItem.getFood().getId())) {
-                throw new IllegalArgumentException("Alimento não encontrado com ID: " + mealItem.getFood().getId());
-            }
-        }
-        
-        // Validar quantidade
-        nutritionService.validateQuantity(mealItem.getQuantity());
-        
-        MealItem itemAtualizado = itemExistente.get();
-        itemAtualizado.setMeal(mealItem.getMeal());
-        itemAtualizado.setFood(mealItem.getFood());
-        itemAtualizado.setQuantity(mealItem.getQuantity());
-        
+        return atualizarItem(id,
+            mealItem.getMeal() != null ? mealItem.getMeal().getId() : null,
+            mealItem.getFood() != null ? mealItem.getFood().getId() : null,
+            mealItem.getQuantity());
+    }
+
+    /**
+     * Atualizar item de refeição usando IDs (usado pelo controller refatorado com CriarMealItemRequest).
+     */
+    public MealItem atualizarItem(Long id, Long mealId, Long foodId, Double quantity) {
+        MealItem itemAtualizado = mealItemRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Item de refeição não encontrado com ID: " + id));
+
+        Meal meal = mealRepository.findById(mealId)
+                .orElseThrow(() -> new IllegalArgumentException("Refeição não encontrada com ID: " + mealId));
+
+        Food food = foodRepository.findById(foodId)
+                .orElseThrow(() -> new IllegalArgumentException("Alimento não encontrado com ID: " + foodId));
+
+        nutritionService.validateQuantity(quantity);
+
+        itemAtualizado.setMeal(meal);
+        itemAtualizado.setFood(food);
+        itemAtualizado.setQuantity(quantity);
+
         // Os nutrientes serão recalculados automaticamente via @PreUpdate
         return mealItemRepository.save(itemAtualizado);
     }

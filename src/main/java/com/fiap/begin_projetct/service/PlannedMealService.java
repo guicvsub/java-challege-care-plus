@@ -1,5 +1,6 @@
 package com.fiap.begin_projetct.service;
 
+import com.fiap.begin_projetct.dto.CriarPlannedMealRequest;
 import com.fiap.begin_projetct.model.DietPlan;
 import com.fiap.begin_projetct.model.Meal;
 import com.fiap.begin_projetct.model.PlannedMeal;
@@ -222,5 +223,33 @@ public class PlannedMealService {
         return dietPlans.stream()
                 .mapToLong(plan -> plannedMealRepository.countByDietPlanId(plan.getId()))
                 .sum();
+    }
+
+    /**
+     * Atualizar refeição planejada usando DTO com IDs (usado pelo controller refatorado).
+     */
+    public PlannedMeal atualizarPorRequest(Long id, CriarPlannedMealRequest request) {
+        PlannedMeal itemAtualizado = plannedMealRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Refeição planejada não encontrada com ID: " + id));
+
+        DietPlan dietPlan = dietPlanRepository.findById(request.getPlanoId())
+                .orElseThrow(() -> new IllegalArgumentException("Plano alimentar não encontrado com ID: " + request.getPlanoId()));
+
+        Meal meal = mealRepository.findById(request.getRefeicaoId())
+                .orElseThrow(() -> new IllegalArgumentException("Refeição não encontrada com ID: " + request.getRefeicaoId()));
+
+        LocalDate plannedDate = request.getDataPlanejada();
+        if (plannedDate.isBefore(dietPlan.getStartDate()) || plannedDate.isAfter(dietPlan.getEndDate())) {
+            throw new IllegalArgumentException("Data planejada está fora do período do plano alimentar");
+        }
+
+        itemAtualizado.setDietPlan(dietPlan);
+        itemAtualizado.setMeal(meal);
+        itemAtualizado.setPlannedDate(plannedDate);
+        itemAtualizado.setMealType(request.getTipoRefeicao());
+        itemAtualizado.setIsPresetUsed(meal.getIsPreset());
+        itemAtualizado.setPresetName(meal.getIsPreset() ? meal.getPresetName() : null);
+
+        return plannedMealRepository.save(itemAtualizado);
     }
 }

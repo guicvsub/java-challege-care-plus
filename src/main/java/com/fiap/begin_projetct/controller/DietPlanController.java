@@ -24,13 +24,14 @@ import java.util.Optional;
 @RequestMapping("/api/diet-plans")
 @RequiredArgsConstructor
 @Tag(name = "Planos Alimentares", description = "API para gerenciamento de planos alimentares")
-public class DietPlanController {
+public class DietPlanController implements CrudController<DietPlan, Long, CreateDietPlanRequest, DietPlan> {
     
     private final DietPlanService dietPlanService;
     
     @GetMapping
     @Operation(summary = "Listar todos os planos alimentares", description = "Retorna uma lista com todos os planos alimentares cadastrados")
     @ApiResponse(responseCode = "200", description = "Lista de planos retornada com sucesso")
+    @Override
     public ResponseEntity<List<DietPlan>> listarTodos() {
         List<DietPlan> plans = dietPlanService.listarTodos();
         return ResponseEntity.ok(plans);
@@ -42,6 +43,7 @@ public class DietPlanController {
         @ApiResponse(responseCode = "200", description = "Plano encontrado com sucesso"),
         @ApiResponse(responseCode = "404", description = "Plano não encontrado")
     })
+    @Override
     public ResponseEntity<DietPlan> buscarPorId(@PathVariable Long id) {
         Optional<DietPlan> plan = dietPlanService.buscarPorId(id);
         return plan.map(ResponseEntity::ok)
@@ -95,6 +97,12 @@ public class DietPlanController {
         DietPlan plan = dietPlanService.createPlan(pacienteId, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(plan);
     }
+
+    // Implementa CrudController — prefira POST /paciente/{id} para associar o paciente.
+    @Override
+    public ResponseEntity<DietPlan> criar(CreateDietPlanRequest request) {
+        throw new UnsupportedOperationException("Use POST /api/diet-plans/paciente/{pacienteId}");
+    }
     
     @PostMapping("/{planoId}/refeicao-preset")
     @Operation(summary = "Planejar refeição com preset", description = "Planeja uma refeição usando um preset existente")
@@ -137,6 +145,7 @@ public class DietPlanController {
         @ApiResponse(responseCode = "400", description = "Dados inválidos"),
         @ApiResponse(responseCode = "404", description = "Plano não encontrado")
     })
+    @Override
     public ResponseEntity<DietPlan> atualizar(@PathVariable Long id, @Valid @RequestBody DietPlan dietPlan) {
         DietPlan planoAtualizado = dietPlanService.atualizar(id, dietPlan);
         return ResponseEntity.ok(planoAtualizado);
@@ -148,6 +157,7 @@ public class DietPlanController {
         @ApiResponse(responseCode = "204", description = "Plano deletado com sucesso"),
         @ApiResponse(responseCode = "404", description = "Plano não encontrado")
     })
+    @Override
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
         dietPlanService.deletar(id);
         return ResponseEntity.noContent().build();

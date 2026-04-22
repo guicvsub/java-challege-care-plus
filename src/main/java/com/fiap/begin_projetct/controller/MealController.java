@@ -23,7 +23,7 @@ import java.util.Optional;
 @RequestMapping("/api/meals")
 @RequiredArgsConstructor
 @Tag(name = "Refeições", description = "API para gerenciamento de refeições")
-public class MealController {
+public class MealController implements CrudController<Meal, Long, CreateMealRequest, Meal> {
     
     private final MealService mealService;
     
@@ -106,38 +106,12 @@ public class MealController {
         Meal meal = mealService.createPresetMeal(pacienteId, request, presetName);
         return ResponseEntity.status(HttpStatus.CREATED).body(meal);
     }
-    
-    @PostMapping("/paciente/{pacienteId}/plano/{planoId}/preset/{presetMealId}")
-    @Operation(summary = "Planejar refeição com preset", description = "Planeja uma refeição usando um preset existente")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "201", description = "Refeição planejada com sucesso"),
-        @ApiResponse(responseCode = "400", description = "Dados inválidos")
-    })
-    public ResponseEntity<Meal> planejarRefeicaoComPreset(
-            @PathVariable Long pacienteId,
-            @PathVariable Long planoId,
-            @PathVariable Long presetMealId,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataPlanejada,
-            @RequestParam String tipoRefeicao) {
-        Meal meal = mealService.planMealWithPreset(pacienteId, planoId, dataPlanejada, tipoRefeicao, presetMealId);
-        return ResponseEntity.status(HttpStatus.CREATED).body(meal);
+    // Implementa CrudController — criação genérica; prefira os endpoints com contexto de paciente.
+    @Override
+    public ResponseEntity<Meal> criar(CreateMealRequest request) {
+        throw new UnsupportedOperationException("Use POST /api/meals/paciente/{id}/custom ou /preset/{name}");
     }
-    
-    @PostMapping("/paciente/{pacienteId}/plano/{planoId}/custom")
-    @Operation(summary = "Planejar refeição customizada", description = "Planeja uma refeição customizada")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "201", description = "Refeição planejada com sucesso"),
-        @ApiResponse(responseCode = "400", description = "Dados inválidos")
-    })
-    public ResponseEntity<Meal> planejarRefeicaoCustomizada(
-            @PathVariable Long pacienteId,
-            @PathVariable Long planoId,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataPlanejada,
-            @RequestParam String tipoRefeicao,
-            @Valid @RequestBody CreateMealRequest request) {
-        Meal meal = mealService.planCustomMeal(pacienteId, planoId, dataPlanejada, tipoRefeicao, request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(meal);
-    }
+
     
     @PutMapping("/{id}")
     @Operation(summary = "Atualizar refeição", description = "Atualiza os dados de uma refeição existente")
@@ -146,6 +120,7 @@ public class MealController {
         @ApiResponse(responseCode = "400", description = "Dados inválidos"),
         @ApiResponse(responseCode = "404", description = "Refeição não encontrada")
     })
+    @Override
     public ResponseEntity<Meal> atualizar(@PathVariable Long id, @Valid @RequestBody Meal meal) {
         Meal mealAtualizado = mealService.atualizar(id, meal);
         return ResponseEntity.ok(mealAtualizado);
@@ -157,6 +132,7 @@ public class MealController {
         @ApiResponse(responseCode = "204", description = "Refeição deletada com sucesso"),
         @ApiResponse(responseCode = "404", description = "Refeição não encontrada")
     })
+    @Override
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
         mealService.deletar(id);
         return ResponseEntity.noContent().build();

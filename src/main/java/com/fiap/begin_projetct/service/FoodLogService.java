@@ -88,6 +88,26 @@ public class FoodLogService {
         
         return foodLogRepository.saveAll(logs).get(0); // Retorna primeiro log
     }
+
+    /**
+     * DIRETO — registra um alimento diretamente sem vincular a uma refeição existente.
+     */
+    public FoodLog logDiretoConsumption(Long patientId, Long foodId, Double quantity, java.time.LocalDateTime consumedAt) {
+        Food food = foodRepository.findById(foodId)
+                .orElseThrow(() -> new IllegalArgumentException("Alimento não encontrado com ID: " + foodId));
+
+        nutritionService.validateQuantity(quantity);
+        nutritionService.validateFoodNutrients(food);
+
+        FoodLog log = new FoodLog();
+        log.setPatient(new Paciente(patientId));
+        log.setFood(food);
+        log.setQuantity(quantity);
+        log.setConsumedAt(consumedAt != null ? consumedAt : java.time.LocalDateTime.now());
+        log.setIsPlanned(false);
+
+        return foodLogRepository.save(log);
+    }
     
     /**
      * Caso 9: Alterar consumo real
