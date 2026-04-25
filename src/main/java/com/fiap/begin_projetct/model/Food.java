@@ -43,4 +43,10 @@ public class Food {
     
     @Column(name = "serving_unit", nullable = false, length = 20)
     private String servingUnit;
+
+    @Column(name = "fdc_id")
+    private Long fdcId;
+
+    @Column(nullable = false, length = 20)
+    private String source = "MANUAL";
 }

@@ -15,4 +15,8 @@ public interface FoodRepository extends JpaRepository<Food, Long> {
     boolean existsByName(String name);
     
     List<Food> findByNameContainingIgnoreCase(String name);
+
+    Optional<Food> findByFdcId(Long fdcId);
+
+    boolean existsByFdcId(Long fdcId);
 }

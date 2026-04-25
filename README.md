@@ -81,6 +81,9 @@ src/main/java/com/fiap/begin_projetct/
 
 ### Endpoints da API
 
+#### Autenticação
+- `POST /login` - Efetuar login e obter token JWT
+
 #### Pacientes
 - `GET /api/pacientes` - Listar todos os pacientes
 - `GET /api/pacientes/{id}` - Buscar paciente por ID
@@ -88,6 +91,31 @@ src/main/java/com/fiap/begin_projetct/
 - `POST /api/pacientes` - Criar novo paciente
 - `PUT /api/pacientes/{id}` - Atualizar paciente
 - `DELETE /api/pacientes/{id}` - Deletar paciente
+
+#### Alimentos (Integração Híbrida)
+- `GET /api/foods/buscar?nome={nome}` - Buscar alimentos (Banco Local + API Externa)
+- `GET /api/foods` - Listar todos os alimentos cadastrados/cacheados
+- `POST /api/foods` - Cadastrar alimento manualmente
+- `PUT /api/foods/{id}` - Atualizar dados nutricionais
+
+---
+
+## 🥗 Integração FoodData Central (USDA)
+
+O projeto agora integra-se com a API oficial do **FoodData Central (USDA)** para fornecer uma base de dados nutricionais vasta e confiável.
+
+### Como funciona:
+1. **Busca Híbrida**: Ao buscar um alimento, o sistema consulta primeiro o banco de dados local.
+2. **Fallback para API**: Se menos de 5 resultados forem encontrados localmente, o sistema consulta automaticamente a API do USDA.
+3. **Cache Automático**: Novos alimentos retornados pela API são salvos no banco local (`source = 'API'`), evitando chamadas repetitivas e melhorando a performance.
+
+### Configuração Necessária:
+Para utilizar a funcionalidade de busca externa, você deve configurar sua chave de API no arquivo `src/main/resources/application.properties`:
+```properties
+fooddata.api.key=SUA_CHAVE_AQUI
+```
+
+---
 
 ## Configuração do Banco de Dados
 
@@ -102,6 +130,7 @@ src/main/java/com/fiap/begin_projetct/
 ### Pré-requisitos
 - MySQL rodando (usuário: `root`, senha: `0000`)
 - Banco `care_plus_db` criado
+- Chave de API do FoodData Central configurada
 
 ### Comando para Iniciar (Windows - PowerShell)
 ```powershell
@@ -119,4 +148,5 @@ JWT_TOKEN="care-plus-secret-key-2024" ./mvnw spring-boot:run
 - `Requisitos e regras sprint01.pdf` - **DOCUMENTO DE REQUISITOS**
 - `Sprint01_Testing.pdf` - **DOCUMENTO DE TESTES**
 - `Care-Plus-API.postman_collection.json` - **COLEÇÃO POSTMAN ATUALIZADA**
+- `architecture.md` - **DOCUMENTAÇÃO TÉCNICA DE ARQUITETURA**
 - `README.md` - Este arquivo de visão geral

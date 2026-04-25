@@ -2,9 +2,11 @@ package com.fiap.begin_projetct.service;
 
 import com.fiap.begin_projetct.model.Food;
 import com.fiap.begin_projetct.repository.FoodRepository;
+import com.careplus.external.fooddata.FoodDataClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -14,6 +16,7 @@ public class FoodService {
     
     private final FoodRepository foodRepository;
     private final NutritionService nutritionService;
+    private final FoodDataClient foodDataClient;
     
     public List<Food> listarTodos() {
         return foodRepository.findAll();
@@ -30,7 +33,12 @@ public class FoodService {
     public Food salvar(Food food) {
         nutritionService.validateFoodNutrients(food);
         
-        if (foodRepository.existsByName(food.getName())) {
+        if (food.getFdcId() != null) {
+            Optional<Food> existing = foodRepository.findByFdcId(food.getFdcId());
+            if (existing.isPresent()) {
+                return existing.get();
+            }
+        } else if (foodRepository.existsByName(food.getName())) {
             throw new IllegalArgumentException("Alimento com nome '" + food.getName() + "' já existe");
         }
         
@@ -62,6 +70,8 @@ public class FoodService {
         foodAtualizado.setSugar(food.getSugar());
         foodAtualizado.setServingSize(food.getServingSize());
         foodAtualizado.setServingUnit(food.getServingUnit());
+        foodAtualizado.setFdcId(food.getFdcId());
+        foodAtualizado.setSource(food.getSource());
         
         return foodRepository.save(foodAtualizado);
     }
@@ -74,6 +84,37 @@ public class FoodService {
     }
     
     public List<Food> buscarPorNomeContaining(String nome) {
-        return foodRepository.findByNameContainingIgnoreCase(nome);
+        // 1. Buscar no banco local
+        List<Food> localFoods = foodRepository.findByNameContainingIgnoreCase(nome);
+        
+        // 2. Se encontrar resultados suficientes, retornar
+        if (localFoods.size() >= 5) {
+            return localFoods;
+        }
+        
+        // 3. Caso contrário, buscar na API externa
+        List<Food> apiFoods = foodDataClient.searchFoods(nome);
+        
+        // 4. Filtrar duplicatas e salvar no cache
+        List<Food> cachedFoods = new ArrayList<>();
+        for (Food apiFood : apiFoods) {
+            if (apiFood.getFdcId() != null && !foodRepository.existsByFdcId(apiFood.getFdcId())) {
+                try {
+                    cachedFoods.add(foodRepository.save(apiFood));
+                } catch (Exception e) {
+                    // Ignorar erros de salvamento individual
+                }
+            }
+        }
+        
+        // 5. Retornar união (evitando duplicatas na lista final)
+        List<Food> result = new ArrayList<>(localFoods);
+        for (Food cached : cachedFoods) {
+            if (result.stream().noneMatch(f -> f.getFdcId() != null && f.getFdcId().equals(cached.getFdcId()))) {
+                result.add(cached);
+            }
+        }
+        
+        return result;
     }
 }
