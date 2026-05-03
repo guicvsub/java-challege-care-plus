@@ -32,4 +32,15 @@ public class CreateDietPlanRequest {
     @Min(value = 20, message = "Gorduras diárias devem ser no mínimo 20g")
     @Max(value = 150, message = "Gorduras diárias não devem ultrapassar 150g")
     private Double targetFats;
+
+    public com.fiap.begin_projetct.model.DietPlan toEntity() {
+        com.fiap.begin_projetct.model.DietPlan dp = new com.fiap.begin_projetct.model.DietPlan();
+        dp.setStartDate(this.startDate);
+        dp.setEndDate(this.endDate);
+        dp.setTargetCalories(this.targetCalories);
+        dp.setTargetProteins(this.targetProteins);
+        dp.setTargetCarbs(this.targetCarbs);
+        dp.setTargetFats(this.targetFats);
+        return dp;
+    }
 }

@@ -32,4 +32,11 @@ public class CreateMealRequest {
         @Min(value = 1, message = "Quantidade deve ser maior que zero")
         private Double quantity;
     }
+
+    public com.fiap.begin_projetct.model.Meal toEntity() {
+        com.fiap.begin_projetct.model.Meal m = new com.fiap.begin_projetct.model.Meal();
+        m.setName(this.name);
+        // Note: items mapping is complex and usually handled in service
+        return m;
+    }
 }

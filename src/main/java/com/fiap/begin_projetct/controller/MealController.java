@@ -23,7 +23,7 @@ import java.util.Optional;
 @RequestMapping("/api/meals")
 @RequiredArgsConstructor
 @Tag(name = "Refeições", description = "API para gerenciamento de refeições")
-public class MealController implements CrudController<Meal, Long, CreateMealRequest, Meal> {
+public class MealController implements CrudController<Meal, Long, CreateMealRequest, CreateMealRequest> {
     
     private final MealService mealService;
     
@@ -121,8 +121,8 @@ public class MealController implements CrudController<Meal, Long, CreateMealRequ
         @ApiResponse(responseCode = "404", description = "Refeição não encontrada")
     })
     @Override
-    public ResponseEntity<Meal> atualizar(@PathVariable Long id, @Valid @RequestBody Meal meal) {
-        Meal mealAtualizado = mealService.atualizar(id, meal);
+    public ResponseEntity<Meal> atualizar(@PathVariable Long id, @Valid @RequestBody CreateMealRequest request) {
+        Meal mealAtualizado = mealService.atualizar(id, request.toEntity());
         return ResponseEntity.ok(mealAtualizado);
     }
     

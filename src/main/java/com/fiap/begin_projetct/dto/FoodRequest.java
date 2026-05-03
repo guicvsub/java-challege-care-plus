@@ -46,4 +46,19 @@ public class FoodRequest {
     
     @NotBlank(message = "Unidade da porção é obrigatória")
     private String servingUnit;
+
+    public com.fiap.begin_projetct.model.Food toEntity() {
+        com.fiap.begin_projetct.model.Food f = new com.fiap.begin_projetct.model.Food();
+        f.setName(this.name);
+        f.setCaloriesPer100g(this.caloriesPer100g);
+        f.setProteins(this.proteins);
+        f.setCarbs(this.carbs);
+        f.setFats(this.fats);
+        f.setFiber(this.fiber);
+        f.setSodium(this.sodium);
+        f.setSugar(this.sugar);
+        f.setServingSize(this.servingSize);
+        f.setServingUnit(this.servingUnit);
+        return f;
+    }
 }

@@ -40,7 +40,7 @@ public class SecurityFilter extends OncePerRequestFilter {
                     SecurityContextHolder.getContext().setAuthentication(authentication);
                 }
             } catch (RuntimeException e) {
-                // Token inválido ou expirado — continua sem autenticação
+                System.out.println("ERRO NA VALIDAÇÃO DO TOKEN: " + e.getMessage());
             }
         }
 

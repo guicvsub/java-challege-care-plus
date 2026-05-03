@@ -23,7 +23,7 @@ import java.util.Optional;
 @RequestMapping("/api/food-logs")
 @RequiredArgsConstructor
 @Tag(name = "Logs de Consumo", description = "API para gerenciamento de logs de consumo alimentar")
-public class FoodLogController implements CrudController<FoodLog, Long, RegistrarConsumoRequest, FoodLog> {
+public class FoodLogController implements CrudController<FoodLog, Long, RegistrarConsumoRequest, com.fiap.begin_projetct.dto.FoodLogRequest> {
 
     private final FoodLogService foodLogService;
 
@@ -145,10 +145,11 @@ public class FoodLogController implements CrudController<FoodLog, Long, Registra
         @ApiResponse(responseCode = "404", description = "Log não encontrado")
     })
     @Override
-    public ResponseEntity<FoodLog> atualizar(@PathVariable Long id, @Valid @RequestBody FoodLog foodLog) {
+    public ResponseEntity<FoodLog> atualizar(@PathVariable Long id, @Valid @RequestBody com.fiap.begin_projetct.dto.FoodLogRequest request) {
         if (foodLogService.buscarPorId(id).isEmpty()) {
             return ResponseEntity.notFound().build();
         }
+        FoodLog foodLog = request.toEntity();
         foodLog.setId(id);
         return ResponseEntity.ok(foodLogService.salvar(foodLog));
     }

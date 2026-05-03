@@ -24,7 +24,7 @@ import java.util.Optional;
 @RequestMapping("/api/diet-plans")
 @RequiredArgsConstructor
 @Tag(name = "Planos Alimentares", description = "API para gerenciamento de planos alimentares")
-public class DietPlanController implements CrudController<DietPlan, Long, CreateDietPlanRequest, DietPlan> {
+public class DietPlanController implements CrudController<DietPlan, Long, CreateDietPlanRequest, CreateDietPlanRequest> {
     
     private final DietPlanService dietPlanService;
     
@@ -146,8 +146,8 @@ public class DietPlanController implements CrudController<DietPlan, Long, Create
         @ApiResponse(responseCode = "404", description = "Plano não encontrado")
     })
     @Override
-    public ResponseEntity<DietPlan> atualizar(@PathVariable Long id, @Valid @RequestBody DietPlan dietPlan) {
-        DietPlan planoAtualizado = dietPlanService.atualizar(id, dietPlan);
+    public ResponseEntity<DietPlan> atualizar(@PathVariable Long id, @Valid @RequestBody CreateDietPlanRequest request) {
+        DietPlan planoAtualizado = dietPlanService.atualizar(id, request.toEntity());
         return ResponseEntity.ok(planoAtualizado);
     }
     

@@ -19,7 +19,7 @@ import java.util.Optional;
 @RequestMapping("/api/foods")
 @RequiredArgsConstructor
 @Tag(name = "Alimentos", description = "API para gerenciamento de alimentos")
-public class FoodController implements CrudController<Food, Long, Food, Food> {
+public class FoodController implements CrudController<com.fiap.begin_projetct.model.Food, Long, com.fiap.begin_projetct.dto.FoodRequest, com.fiap.begin_projetct.dto.FoodRequest> {
     
     private final FoodService foodService;
     
@@ -27,8 +27,8 @@ public class FoodController implements CrudController<Food, Long, Food, Food> {
     @Operation(summary = "Listar todos os alimentos", description = "Retorna uma lista com todos os alimentos cadastrados")
     @ApiResponse(responseCode = "200", description = "Lista de alimentos retornada com sucesso")
     @Override
-    public ResponseEntity<List<Food>> listarTodos() {
-        List<Food> foods = foodService.listarTodos();
+    public ResponseEntity<List<com.fiap.begin_projetct.model.Food>> listarTodos() {
+        List<com.fiap.begin_projetct.model.Food> foods = foodService.listarTodos();
         return ResponseEntity.ok(foods);
     }
     
@@ -39,8 +39,8 @@ public class FoodController implements CrudController<Food, Long, Food, Food> {
         @ApiResponse(responseCode = "404", description = "Alimento não encontrado")
     })
     @Override
-    public ResponseEntity<Food> buscarPorId(@PathVariable Long id) {
-        Optional<Food> food = foodService.buscarPorId(id);
+    public ResponseEntity<com.fiap.begin_projetct.model.Food> buscarPorId(@PathVariable Long id) {
+        Optional<com.fiap.begin_projetct.model.Food> food = foodService.buscarPorId(id);
         return food.map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
@@ -51,8 +51,8 @@ public class FoodController implements CrudController<Food, Long, Food, Food> {
         @ApiResponse(responseCode = "200", description = "Alimento encontrado com sucesso"),
         @ApiResponse(responseCode = "404", description = "Alimento não encontrado")
     })
-    public ResponseEntity<Food> buscarPorNome(@PathVariable String nome) {
-        Optional<Food> food = foodService.buscarPorNome(nome);
+    public ResponseEntity<com.fiap.begin_projetct.model.Food> buscarPorNome(@PathVariable String nome) {
+        Optional<com.fiap.begin_projetct.model.Food> food = foodService.buscarPorNome(nome);
         return food.map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
@@ -62,8 +62,8 @@ public class FoodController implements CrudController<Food, Long, Food, Food> {
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Busca realizada com sucesso")
     })
-    public ResponseEntity<List<Food>> buscarPorNomeContaining(@RequestParam String nome) {
-        List<Food> foods = foodService.buscarPorNomeContaining(nome);
+    public ResponseEntity<List<com.fiap.begin_projetct.model.Food>> buscarPorNomeContaining(@RequestParam String nome) {
+        List<com.fiap.begin_projetct.model.Food> foods = foodService.buscarPorNomeContaining(nome);
         return ResponseEntity.ok(foods);
     }
     
@@ -74,8 +74,8 @@ public class FoodController implements CrudController<Food, Long, Food, Food> {
         @ApiResponse(responseCode = "400", description = "Dados inválidos ou alimento já existe")
     })
     @Override
-    public ResponseEntity<Food> criar(@Valid @RequestBody Food food) {
-        Food novoFood = foodService.salvar(food);
+    public ResponseEntity<com.fiap.begin_projetct.model.Food> criar(@Valid @RequestBody com.fiap.begin_projetct.dto.FoodRequest request) {
+        com.fiap.begin_projetct.model.Food novoFood = foodService.salvar(request.toEntity());
         return ResponseEntity.status(HttpStatus.CREATED).body(novoFood);
     }
     
@@ -87,8 +87,8 @@ public class FoodController implements CrudController<Food, Long, Food, Food> {
         @ApiResponse(responseCode = "404", description = "Alimento não encontrado")
     })
     @Override
-    public ResponseEntity<Food> atualizar(@PathVariable Long id, @Valid @RequestBody Food food) {
-        Food foodAtualizado = foodService.atualizar(id, food);
+    public ResponseEntity<com.fiap.begin_projetct.model.Food> atualizar(@PathVariable Long id, @Valid @RequestBody com.fiap.begin_projetct.dto.FoodRequest request) {
+        com.fiap.begin_projetct.model.Food foodAtualizado = foodService.atualizar(id, request.toEntity());
         return ResponseEntity.ok(foodAtualizado);
     }
     

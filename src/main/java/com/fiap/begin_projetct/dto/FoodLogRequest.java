@@ -25,4 +25,12 @@ public class FoodLogRequest {
     private LocalDateTime consumedAt;
     
     private Boolean isPlanned = false;
+
+    public com.fiap.begin_projetct.model.FoodLog toEntity() {
+        com.fiap.begin_projetct.model.FoodLog fl = new com.fiap.begin_projetct.model.FoodLog();
+        fl.setConsumedAt(this.consumedAt != null ? this.consumedAt : LocalDateTime.now());
+        fl.setQuantity(this.quantity);
+        fl.setIsPlanned(this.isPlanned);
+        return fl;
+    }
 }

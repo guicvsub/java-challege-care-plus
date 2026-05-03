@@ -64,8 +64,8 @@ public class UsuarioController {
         @ApiResponse(responseCode = "201", description = "Usuário criado com sucesso"),
         @ApiResponse(responseCode = "400", description = "Dados inválidos ou email já existe")
     })
-    public ResponseEntity<Usuario> criar(@Valid @RequestBody Usuario usuario) {
-        Usuario novoUsuario = usuarioService.salvar(usuario);
+    public ResponseEntity<com.fiap.begin_projetct.model.Usuario> criar(@Valid @RequestBody com.fiap.begin_projetct.dto.UsuarioRequest request) {
+        com.fiap.begin_projetct.model.Usuario novoUsuario = usuarioService.salvar(request.toEntity());
         return ResponseEntity.status(HttpStatus.CREATED).body(novoUsuario);
     }
     
@@ -120,8 +120,8 @@ public class UsuarioController {
         @ApiResponse(responseCode = "400", description = "Dados inválidos"),
         @ApiResponse(responseCode = "404", description = "Usuário não encontrado")
     })
-    public ResponseEntity<Usuario> atualizar(@PathVariable Long id, @Valid @RequestBody Usuario usuario) {
-        Usuario usuarioAtualizado = usuarioService.atualizar(id, usuario);
+    public ResponseEntity<com.fiap.begin_projetct.model.Usuario> atualizar(@PathVariable Long id, @Valid @RequestBody com.fiap.begin_projetct.dto.UsuarioRequest request) {
+        com.fiap.begin_projetct.model.Usuario usuarioAtualizado = usuarioService.atualizar(id, request.toEntity());
         return ResponseEntity.ok(usuarioAtualizado);
     }
     

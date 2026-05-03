@@ -31,4 +31,15 @@ public class PacienteRequest {
     
     @Size(max = 100, message = "Convênio deve ter no máximo 100 caracteres")
     private String convenio;
+
+    public com.fiap.begin_projetct.model.Paciente toEntity() {
+        com.fiap.begin_projetct.model.Paciente p = new com.fiap.begin_projetct.model.Paciente();
+        p.setNome(this.nome);
+        p.setCpf(this.cpf);
+        p.setEmail(this.email);
+        p.setTelefone(this.telefone);
+        p.setDataNascimento(this.dataNascimento);
+        p.setConvenio(this.convenio);
+        return p;
+    }
 }

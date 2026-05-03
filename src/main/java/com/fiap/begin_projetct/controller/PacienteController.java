@@ -62,8 +62,8 @@ public class PacienteController {
         @ApiResponse(responseCode = "400", description = "Dados inválidos ou paciente já existe"),
         @ApiResponse(responseCode = "409", description = "Conflito - CPF ou e-mail já cadastrado")
     })
-    public ResponseEntity<Paciente> criar(@Valid @RequestBody Paciente paciente) {
-        Paciente novoPaciente = pacienteService.salvar(paciente);
+    public ResponseEntity<com.fiap.begin_projetct.model.Paciente> criar(@Valid @RequestBody com.fiap.begin_projetct.dto.PacienteRequest request) {
+        com.fiap.begin_projetct.model.Paciente novoPaciente = pacienteService.salvar(request.toEntity());
         return ResponseEntity.status(HttpStatus.CREATED).body(novoPaciente);
     }
     
@@ -75,8 +75,8 @@ public class PacienteController {
         @ApiResponse(responseCode = "404", description = "Paciente não encontrado"),
         @ApiResponse(responseCode = "409", description = "Conflito - CPF ou e-mail já cadastrado")
     })
-    public ResponseEntity<Paciente> atualizar(@PathVariable Long id, @Valid @RequestBody Paciente paciente) {
-        Paciente pacienteAtualizado = pacienteService.atualizar(id, paciente);
+    public ResponseEntity<com.fiap.begin_projetct.model.Paciente> atualizar(@PathVariable Long id, @Valid @RequestBody com.fiap.begin_projetct.dto.PacienteRequest request) {
+        com.fiap.begin_projetct.model.Paciente pacienteAtualizado = pacienteService.atualizar(id, request.toEntity());
         return ResponseEntity.ok(pacienteAtualizado);
     }
     

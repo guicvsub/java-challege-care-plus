@@ -19,4 +19,11 @@ public class UsuarioRequest {
     @Pattern(regexp = "^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,32}$",
              message = "Senha deve conter: 1 letra maiúscula, 1 letra minúscula, 1 número e 1 caractere especial")
     private String senha;
+
+    public com.fiap.begin_projetct.model.Usuario toEntity() {
+        com.fiap.begin_projetct.model.Usuario u = new com.fiap.begin_projetct.model.Usuario();
+        u.setEmail(this.email);
+        u.setSenha(this.senha);
+        return u;
+    }
 }
