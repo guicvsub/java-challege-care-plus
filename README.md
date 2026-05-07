@@ -1,152 +1,303 @@
-# Java Challenge Care Plus
+# 🏥 Care Plus API
 
-## Documentos PDF Importantes
-
-### **Requisitos e regras sprint01.pdf**
-Este é o **documento principal de requisitos** que contém:
-- Todos os requisitos e especificações do projeto
-- Regras e diretrizes de desenvolvimento
-- Objetivos e entregas da Sprint 01
-- Critérios de aceitação
-- Requisitos de implementação
-
-### **Sprint01_Testing.pdf**
-Este documento contém **todos os requisitos de teste**:
-- Cenários de teste e casos de teste
-- Procedimentos e metodologias de teste
-- Requisitos de garantia de qualidade
-- Critérios de validação
-
-## Requisitos do Projeto
-
-### Requisitos Principais (dos arquivos PDF)
-- **Obrigatório ler**: `Requisitos e regras sprint01.pdf` - contém todos os requisitos do projeto
-- **Obrigatório seguir**: `Sprint01_Testing.pdf` - contém todas as especificações de teste
-- Implementar todas as funcionalidades conforme especificado no PDF de requisitos
-- Seguir todas as diretrizes de teste do PDF de testes
-
-### Configuração de Desenvolvimento
-- **Java Development Kit (JDK) 21** - Versão obrigatória
-- **Maven** - Ferramenta de build obrigatória
-- IDE (IntelliJ IDEA, Eclipse ou VS Code)
-- **Spring Boot** - Framework principal do projeto
-- **MySQL** - Banco de dados utilizado
-
-## Como Começar
-
-1. **PRIMEIRO**: Ler `Requisitos e regras sprint01.pdf` completamente
-2. **SEGUNDO**: Revisar `Sprint01_Testing.pdf` para requisitos de teste
-3. Configurar seu ambiente de desenvolvimento Java
-4. Implementar conforme os requisitos dos PDFs
-5. Testar conforme as especificações de teste dos PDFs
-
-## Pontos Chave
-- Todos os requisitos estão nos arquivos PDF - **não pule a leitura deles**
-- As especificações de teste são obrigatórias - **siga exatamente**
-- O sucesso do projeto depende de seguir as diretrizes dos PDFs
-
-## Estrutura MVC
-
-### Pacotes Criados
-```
-src/main/java/com/fiap/begin_projetct/
-├── controller/     # Camada de apresentação (Controllers REST)
-├── service/        # Camada de lógica de negócio (Services)
-├── repository/     # Camada de acesso a dados (Repositories)
-├── model/          # Camada de modelo de dados (Entities)
-└── BeginProjetctApplication.java
-```
-
-### Exemplo de Implementação
-
-#### Model (Paciente.java)
-- Entidade JPA para representar pacientes
-- Mapeamento para tabela `pacientes`
-- Anotações Lombok para redução de código boilerplate
-
-#### Repository (PacienteRepository.java)
-- Interface extending JpaRepository
-- Métodos personalizados para busca por CPF e e-mail
-- Validação de existência de registros
-
-#### Service (PacienteService.java)
-- Lógica de negócio para gestão de pacientes
-- Validações de regras de negócio
-- Operações CRUD completas
-
-#### Controller (PacienteController.java)
-- Endpoints REST para API de pacientes
-- Operações: GET, POST, PUT, DELETE
-- Tratamento de respostas HTTP adequadas
-
-### Endpoints da API
-
-#### Autenticação
-- `POST /login` - Efetuar login e obter token JWT
-
-#### Pacientes
-- `GET /api/pacientes` - Listar todos os pacientes
-- `GET /api/pacientes/{id}` - Buscar paciente por ID
-- `GET /api/pacientes/cpf/{cpf}` - Buscar paciente por CPF
-- `POST /api/pacientes` - Criar novo paciente
-- `PUT /api/pacientes/{id}` - Atualizar paciente
-- `DELETE /api/pacientes/{id}` - Deletar paciente
-
-#### Alimentos (Integração Híbrida)
-- `GET /api/foods/buscar?nome={nome}` - Buscar alimentos (Banco Local + API Externa)
-- `GET /api/foods` - Listar todos os alimentos cadastrados/cacheados
-- `POST /api/foods` - Cadastrar alimento manualmente
-- `PUT /api/foods/{id}` - Atualizar dados nutricionais
+Sistema de gerenciamento de dietas e nutrição com autenticação JWT, integração com API externa de alimentos (USDA FoodData Central) e documentação Swagger.
 
 ---
 
-## 🥗 Integração FoodData Central (USDA)
+## 👥 Equipe
 
-O projeto agora integra-se com a API oficial do **FoodData Central (USDA)** para fornecer uma base de dados nutricionais vasta e confiável.
+| Nome | RM |
+| :--- | :--- |
+| Gabriel Souza Fiore | RM553710 |
+| Guilherme Santiago | RM552321 |
+| Miguel Leal Tasso | RM553009 |
+| João Víctor Seixas | RM553888 |
+| Lucca Enrico | RM553678 |
 
-### Como funciona:
-1. **Busca Híbrida**: Ao buscar um alimento, o sistema consulta primeiro o banco de dados local.
-2. **Fallback para API**: Se menos de 5 resultados forem encontrados localmente, o sistema consulta automaticamente a API do USDA.
-3. **Cache Automático**: Novos alimentos retornados pela API são salvos no banco local (`source = 'API'`), evitando chamadas repetitivas e melhorando a performance.
+---
 
-### Configuração Necessária:
-Para utilizar a funcionalidade de busca externa, você deve configurar sua chave de API no arquivo `src/main/resources/application.properties`:
+## 🚀 Tecnologias Utilizadas
+
+| Componente | Tecnologia | Versão |
+| :--- | :--- | :--- |
+| Linguagem | Java | 21 |
+| Framework | Spring Boot | 3.4.1 |
+| Banco de Dados | MySQL | 8.0 |
+| Segurança | Spring Security + JWT (auth0) | 4.5.1 |
+| Documentação | Swagger UI / OpenAPI | 3.0 (springdoc 2.7.0) |
+| Migrações de Banco | Flyway | Incluso no Spring Boot 3.x |
+| Ferramenta de Build | Maven | 3.x |
+| Boilerplate | Lombok | - |
+| HTTP Reativo | Spring WebFlux / WebClient | - |
+
+---
+
+## 📋 Pré-requisitos
+
+- **JDK 21** instalado e configurado no `PATH`
+- **MySQL 8.0** rodando localmente
+- **Maven** (ou usar o `mvnw` incluído no projeto)
+- Banco de dados `care_plus_db` criado no MySQL
+
+---
+
+## ⚙️ Configuração do Banco de Dados
+
+### 1. Criar o banco de dados
+
+Conecte-se ao MySQL e execute:
+
+```sql
+CREATE DATABASE care_plus_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+```
+
+### 2. Configuração no `application.properties`
+
+O arquivo já está configurado com os seguintes parâmetros:
+
 ```properties
-fooddata.api.key=SUA_CHAVE_AQUI
+spring.datasource.url=jdbc:mysql://localhost:3306/care_plus_db
+spring.datasource.username=root
+spring.datasource.password=0000
 ```
+
+> ⚠️ Se sua senha do MySQL for diferente, altere `spring.datasource.password` antes de rodar.
+
+### 3. Migrações com Flyway (automático)
+
+O projeto usa **Flyway** para controle de versão do banco de dados. As migrações rodam **automaticamente** ao iniciar a aplicação — não é necessário executar nenhum SQL manualmente.
+
+As migrações estão em: `src/main/resources/db/migration/`
+
+| Arquivo | Descrição |
+| :--- | :--- |
+| `V1__init.sql` | Cria a tabela `pacientes` |
+| `V2__create_usuarios_table.sql` | Cria a tabela `usuarios` |
+| `V3__insert_test_users.sql` | Insere usuários de teste |
+| `V4__fix_senha_column_size.sql` | Ajusta tamanho da coluna senha |
+| `V5__super_inserts.sql` | Insere dados iniciais |
+
+> ✅ Na **primeira execução**, o Flyway detecta o banco existente automaticamente graças ao `baseline-on-migrate=true`.
 
 ---
 
-## Configuração do Banco de Dados
+## ▶️ Como Rodar o Projeto
 
-### MySQL
-- **Banco**: care_plus_db
-- **Porta**: 3306
-- **URL**: jdbc:mysql://localhost:3306/care_plus_db
-- **DDL Auto**: update (cria/atualiza tabelas automaticamente)
+### Windows (PowerShell)
 
-## Como Rodar o Projeto
-
-### Pré-requisitos
-- MySQL rodando (usuário: `root`, senha: `0000`)
-- Banco `care_plus_db` criado
-- Chave de API do FoodData Central configurada
-
-### Comando para Iniciar (Windows - PowerShell)
 ```powershell
 $env:JWT_TOKEN="care-plus-secret-key-2024"; .\mvnw.cmd spring-boot:run
 ```
 
-### Comando para Iniciar (Linux/Mac)
+### Linux / macOS (Terminal)
+
 ```bash
 JWT_TOKEN="care-plus-secret-key-2024" ./mvnw spring-boot:run
 ```
 
-> **Nota:** A aplicação roda por padrão na porta `8080`. O Swagger está disponível em `http://localhost:8080/swagger-ui.html`.
+> A aplicação inicia na porta **8080**.
 
-## Arquivos do Projeto
-- `Requisitos e regras sprint01.pdf` - **DOCUMENTO DE REQUISITOS**
-- `Sprint01_Testing.pdf` - **DOCUMENTO DE TESTES**
-- `Care-Plus-API.postman_collection.json` - **COLEÇÃO POSTMAN ATUALIZADA**
-- `architecture.md` - **DOCUMENTAÇÃO TÉCNICA DE ARQUITETURA**
-- `README.md` - Este arquivo de visão geral
+---
+
+## 📖 Documentação Interativa (Swagger)
+
+Com a aplicação rodando, acesse:
+
+```
+http://localhost:8080/swagger-ui.html
+```
+
+Todos os endpoints estão documentados com descrições, parâmetros e exemplos de resposta.
+
+---
+
+## 🔐 Autenticação JWT
+
+### 1. Fazer login
+
+```http
+POST http://localhost:8080/login
+Content-Type: application/json
+
+{
+  "login": "admin@careplus.com",
+  "senha": "admin123"
+}
+```
+
+**Resposta:**
+```json
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+}
+```
+
+### 2. Usar o token nas requisições protegidas
+
+Adicione o cabeçalho em todas as requisições:
+
+```
+Authorization: Bearer <seu_token_aqui>
+```
+
+---
+
+## 📡 Principais Endpoints
+
+### 👤 Pacientes
+
+| Método | Endpoint | Descrição |
+| :--- | :--- | :--- |
+| `GET` | `/api/pacientes` | Listar todos os pacientes |
+| `GET` | `/api/pacientes/{id}` | Buscar paciente por ID |
+| `GET` | `/api/pacientes/cpf/{cpf}` | Buscar paciente por CPF |
+| `POST` | `/api/pacientes` | Cadastrar novo paciente |
+| `PUT` | `/api/pacientes/{id}` | Atualizar paciente |
+| `DELETE` | `/api/pacientes/{id}` | Remover paciente |
+
+**Exemplo de requisição POST `/api/pacientes`:**
+```json
+{
+  "nome": "Maria Silva",
+  "cpf": "123.456.789-00",
+  "email": "maria@email.com",
+  "telefone": "(11) 99999-9999",
+  "dataNascimento": "1990-05-15",
+  "convenio": "Unimed"
+}
+```
+
+**Resposta (201 Created):**
+```json
+{
+  "id": 1,
+  "nome": "Maria Silva",
+  "cpf": "123.456.789-00",
+  "email": "maria@email.com",
+  "telefone": "(11) 99999-9999",
+  "dataNascimento": "1990-05-15",
+  "convenio": "Unimed",
+  "createdAt": "2026-05-07T15:00:00"
+}
+```
+
+---
+
+### 🍎 Alimentos (com integração USDA)
+
+| Método | Endpoint | Descrição |
+| :--- | :--- | :--- |
+| `GET` | `/api/foods` | Listar todos os alimentos |
+| `GET` | `/api/foods/buscar?nome=frango` | Buscar por nome (banco local + USDA) |
+| `GET` | `/api/foods/{id}` | Buscar alimento por ID |
+| `POST` | `/api/foods` | Cadastrar alimento manualmente |
+| `PUT` | `/api/foods/{id}` | Atualizar dados nutricionais |
+| `DELETE` | `/api/foods/{id}` | Remover alimento |
+
+**Exemplo de requisição POST `/api/foods`:**
+```json
+{
+  "name": "Frango Grelhado",
+  "caloriesPer100g": 165,
+  "proteins": 31.0,
+  "carbs": 0.0,
+  "fats": 3.6,
+  "fiber": 0.0,
+  "sodium": 0.074,
+  "sugar": 0.0,
+  "servingSize": 100.0,
+  "servingUnit": "g"
+}
+```
+
+---
+
+### 🥗 Planos Alimentares
+
+| Método | Endpoint | Descrição |
+| :--- | :--- | :--- |
+| `GET` | `/api/diet-plans` | Listar todos os planos |
+| `GET` | `/api/diet-plans/paciente/{id}` | Planos de um paciente |
+| `POST` | `/api/diet-plans/paciente/{id}` | Criar plano para um paciente |
+| `PUT` | `/api/diet-plans/{id}` | Atualizar plano |
+| `DELETE` | `/api/diet-plans/{id}` | Remover plano |
+
+---
+
+### 📝 Registro de Consumo (Food Logs)
+
+| Método | Endpoint | Descrição |
+| :--- | :--- | :--- |
+| `GET` | `/api/food-logs/paciente/{id}` | Histórico de consumo |
+| `GET` | `/api/food-logs/paciente/{id}/calorias` | Total de calorias por data |
+| `POST` | `/api/food-logs/paciente/{id}` | Registrar consumo |
+| `DELETE` | `/api/food-logs/{id}` | Remover registro |
+
+---
+
+## 🍽️ Integração FoodData Central (USDA)
+
+A busca de alimentos funciona de forma **híbrida**:
+
+1. Consulta o banco local primeiro
+2. Se menos de 5 resultados → consulta automaticamente a **API USDA**
+3. Resultados da API são **cacheados** no banco local (campo `source = 'API'`)
+4. Duplicatas evitadas via campo `fdc_id`
+
+Para habilitar, configure em `application.properties`:
+
+```properties
+fooddata.api.key=SUA_CHAVE_AQUI
+```
+
+Obtenha sua chave gratuita em: https://fdc.nal.usda.gov/api-key-signup.html
+
+---
+
+## 🗂️ Estrutura do Projeto
+
+```
+src/main/java/com/fiap/begin_projetct/
+├── controller/     # Endpoints REST (HTTP)
+├── service/        # Lógica de negócio
+├── repository/     # Acesso ao banco de dados (Spring Data JPA)
+├── model/          # Entidades JPA (tabelas do banco)
+├── dto/            # Data Transfer Objects (validação de entrada)
+├── exception/      # Tratamento global de erros (@RestControllerAdvice)
+└── infra/
+    ├── security/   # JWT, filtros e configurações de segurança
+    └── config/     # Configurações gerais do Spring
+```
+
+---
+
+## 🧪 Testando com Postman
+
+O projeto inclui uma coleção Postman completa:
+
+- **`Care-Plus-API.postman_collection.json`** — todos os endpoints configurados
+- **`Care-Plus-Environment.postman_environment.json`** — variáveis de ambiente
+
+Importe os dois arquivos no Postman, selecione o ambiente **Care-Plus-Environment** e execute o login primeiro para obter o token automaticamente.
+
+Consulte o **`POSTMAN-GUIDE.md`** para instruções detalhadas.
+
+---
+
+## 📐 Arquitetura e Diagramas
+
+Consulte o arquivo **`architecture.md`** para:
+- Diagrama de camadas da arquitetura
+- Diagrama ER (Entidade-Relacionamento)
+- Diagrama UML de Classes (imagem: `uml-classes.png`)
+- Fluxo de autenticação JWT
+- Tabela completa de endpoints
+
+---
+
+## ⚠️ Observações Importantes
+
+- O Hibernate está configurado com `ddl-auto=validate` — o **Flyway é responsável** por criar e versionar o banco
+- A variável de ambiente `JWT_TOKEN` é obrigatória para gerar tokens de autenticação
+- O Swagger não exige autenticação para ser acessado
+- Logs de debug estão ativados — normal ver SQL no console durante desenvolvimento

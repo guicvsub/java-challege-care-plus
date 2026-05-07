@@ -1,163 +1,309 @@
-# 🏗️ Care Plus - System Architecture & API Documentation
+# 🏗️ Care Plus — Arquitetura do Sistema e Documentação da API
 
-Welcome to the technical documentation for **Care Plus**, a robust diet and nutrition management system. This document outlines the system's architecture, data models, and API endpoint structure to support the transition to external data services.
+Bem-vindo à documentação técnica do **Care Plus**, um sistema robusto de gerenciamento de dietas e nutrição. Este documento descreve a arquitetura do sistema, os modelos de dados e a estrutura dos endpoints da API.
 
 ---
 
-## 🏛️ System Architecture
+## 🏛️ Arquitetura do Sistema
 
-Care Plus follows a modern **Layered Architecture** built on the **Spring Boot** ecosystem. This separation of concerns ensures scalability, maintainability, and clear boundaries between business logic and infrastructure.
+O Care Plus segue uma **Arquitetura em Camadas** moderna, construída sobre o ecossistema **Spring Boot**. Essa separação de responsabilidades garante escalabilidade, manutenibilidade e limites claros entre a lógica de negócio e a infraestrutura.
 
-### 🧩 Core Layers
+### 🧩 Camadas Principais
 
 ```mermaid
 graph TD
-    A[Client - Postman/Frontend] -->|JSON/JWT| B[REST Controllers]
-    B --> C[Service Layer]
-    C --> D[Repository Layer - Spring Data JPA]
-    D --> E[(MySQL Database)]
-    
-    subgraph Security
-        F[Security Filter] -->|Validate Token| G[Token Service]
+    A[Cliente - Postman/Frontend] -->|JSON/JWT| B[REST Controllers]
+    B --> C[Camada de Serviço]
+    C --> D[Camada de Repositório - Spring Data JPA]
+    D --> E[(Banco de Dados MySQL)]
+
+    subgraph Segurança
+        F[Filtro de Segurança] -->|Valida Token| G[Serviço de Token]
         B -.-> F
     end
 
-    subgraph "External Integration (Planned)"
-        H[External Food API]
+    subgraph "Integração Externa"
+        H[API Externa de Alimentos - USDA]
     end
 ```
 
-| Layer | Responsibility |
+| Camada | Responsabilidade |
 | :--- | :--- |
-| **Controller** | Handles HTTP requests, input validation, and maps models to JSON. |
-| **Service** | Orchestrates business rules, transactions, and internal logic. |
-| **Repository** | Abstraction for database operations using Spring Data JPA. |
-| **Model** | JPA Entities representing the core business domain. |
-| **Security** | JWT-based authentication and authorization using Spring Security. |
+| **Controller** | Recebe requisições HTTP, valida entradas e serializa respostas em JSON. |
+| **Service** | Orquestra regras de negócio, transações e lógica interna. |
+| **Repository** | Abstração para operações de banco de dados via Spring Data JPA. |
+| **Model** | Entidades JPA que representam o domínio de negócio. |
+| **Security** | Autenticação e autorização baseadas em JWT com Spring Security. |
 
 ---
 
-## 🔐 Authentication Flow
+## 🔐 Fluxo de Autenticação
 
-The system uses **JWT (JSON Web Token)** for secure access.
+O sistema utiliza **JWT (JSON Web Token)** para acesso seguro.
 
-1.  **Endpoint**: `POST /login`
-2.  **Payload**: `{ "login": "...", "senha": "..." }`
-3.  **Response**: `{ "token": "..." }`
-4.  **Usage**: Include the token in the `Authorization: Bearer <token>` header for all protected requests.
-
----
-
-## 📡 API Endpoints Structure
-
-### 🍱 Food Management (Target for External API Replacement)
-These endpoints are used to manage the food database. The goal is to replace the local database storage with an external provider (e.g., Nutritionix, Edamam).
-
-| Method | Endpoint | Description |
-| :--- | :--- | :--- |
-| `GET` | `/api/foods` | List all available foods. |
-| `GET` | `/api/foods/{id}` | Get detailed nutritional info by ID. |
-| `GET` | `/api/foods/nome/{nome}` | Find food by exact name. |
-| `GET` | `/api/foods/buscar?nome=...` | Search foods by partial name. |
-| `POST` | `/api/foods` | Register a new food item. |
-| `PUT` | `/api/foods/{id}` | Update food nutritional data. |
-| `DELETE` | `/api/foods/{id}` | Remove a food item. |
-
-### 👥 Patient Management
-| Method | Endpoint | Description |
-| :--- | :--- | :--- |
-| `GET` | `/api/pacientes` | List all registered patients. |
-| `GET` | `/api/pacientes/{id}` | Get patient profile by ID. |
-| `GET` | `/api/pacientes/cpf/{cpf}` | Find patient by CPF. |
-| `POST` | `/api/pacientes` | Register a new patient. |
-| `PUT` | `/api/pacientes/{id}` | Update patient information. |
-| `DELETE` | `/api/pacientes/{id}` | Delete a patient profile. |
-
-### 🥗 Diet Plans & Planning
-| Method | Endpoint | Description |
-| :--- | :--- | :--- |
-| `GET` | `/api/diet-plans` | List all diet plans. |
-| `GET` | `/api/diet-plans/paciente/{id}` | Get plans for a specific patient. |
-| `POST` | `/api/diet-plans/paciente/{id}` | Create a new plan for a patient. |
-| `POST` | `/api/diet-plans/{id}/refeicao-preset` | Add a pre-defined meal to a plan. |
-| `POST` | `/api/diet-plans/{id}/refeicao-custom` | Add a custom meal to a plan. |
-
-### 📝 Food Consumption Logs
-| Method | Endpoint | Description |
-| :--- | :--- | :--- |
-| `GET` | `/api/food-logs` | List all consumption logs. |
-| `GET` | `/api/food-logs/paciente/{id}` | Get consumption history for a patient. |
-| `GET` | `/api/food-logs/paciente/{id}/calorias` | Get total calories for a patient on a specific date. |
-| `POST` | `/api/food-logs/paciente/{id}` | Register a new consumption (Preset, Custom, or Direct). |
-| `DELETE` | `/api/food-logs/{id}` | Remove a consumption entry. |
-
-### 🍴 Meal Presets
-| Method | Endpoint | Description |
-| :--- | :--- | :--- |
-| `GET` | `/api/meals` | List all meal presets. |
-| `POST` | `/api/meals` | Create a new meal preset with multiple food items. |
-| `GET` | `/api/meals/{id}` | Get details of a meal preset. |
+1. **Endpoint**: `POST /login`
+2. **Payload de Entrada**: `{ "login": "...", "senha": "..." }`
+3. **Resposta**: `{ "token": "..." }`
+4. **Uso**: Incluir o token no cabeçalho `Authorization: Bearer <token>` em todas as requisições protegidas.
 
 ---
 
-## 📊 Data Models (Entities)
+## 📡 Estrutura dos Endpoints da API
 
-### 🥑 Food Entity
-The core model for nutritional tracking.
+### 🍱 Gerenciamento de Alimentos
+Endpoints para gerenciar o banco de dados de alimentos, com integração híbrida (banco local + API externa USDA).
 
-- `id`: Unique identifier (Long)
-- `name`: Food name (String, 100 chars)
-- `caloriesPer100g`: Kcal per 100g (Integer)
-- `proteins`, `carbs`, `fats`: Macronutrients in grams (Double)
-- `fiber`, `sodium`, `sugar`: Micronutrients (Double)
-- `servingSize`: Standard portion size (Double)
-- `servingUnit`: Unit of measure (e.g., "g", "ml")
+| Método | Endpoint | Descrição |
+| :--- | :--- | :--- |
+| `GET` | `/api/foods` | Listar todos os alimentos disponíveis. |
+| `GET` | `/api/foods/{id}` | Buscar informações nutricionais por ID. |
+| `GET` | `/api/foods/nome/{nome}` | Buscar alimento por nome exato. |
+| `GET` | `/api/foods/buscar?nome=...` | Buscar alimentos por parte do nome. |
+| `POST` | `/api/foods` | Cadastrar um novo alimento. |
+| `PUT` | `/api/foods/{id}` | Atualizar dados nutricionais. |
+| `DELETE` | `/api/foods/{id}` | Remover um alimento. |
 
-### 🧬 Entity Relationship Diagram
+### 👥 Gerenciamento de Pacientes
+| Método | Endpoint | Descrição |
+| :--- | :--- | :--- |
+| `GET` | `/api/pacientes` | Listar todos os pacientes cadastrados. |
+| `GET` | `/api/pacientes/{id}` | Buscar perfil do paciente por ID. |
+| `GET` | `/api/pacientes/cpf/{cpf}` | Buscar paciente por CPF. |
+| `POST` | `/api/pacientes` | Cadastrar novo paciente. |
+| `PUT` | `/api/pacientes/{id}` | Atualizar dados do paciente. |
+| `DELETE` | `/api/pacientes/{id}` | Remover paciente do sistema. |
+
+### 🥗 Planos Alimentares
+| Método | Endpoint | Descrição |
+| :--- | :--- | :--- |
+| `GET` | `/api/diet-plans` | Listar todos os planos alimentares. |
+| `GET` | `/api/diet-plans/paciente/{id}` | Buscar planos de um paciente específico. |
+| `POST` | `/api/diet-plans/paciente/{id}` | Criar novo plano para um paciente. |
+| `POST` | `/api/diet-plans/{id}/refeicao-preset` | Adicionar refeição pré-definida ao plano. |
+| `POST` | `/api/diet-plans/{id}/refeicao-custom` | Adicionar refeição customizada ao plano. |
+
+### 📝 Registro de Consumo Alimentar
+| Método | Endpoint | Descrição |
+| :--- | :--- | :--- |
+| `GET` | `/api/food-logs` | Listar todos os registros de consumo. |
+| `GET` | `/api/food-logs/paciente/{id}` | Histórico de consumo de um paciente. |
+| `GET` | `/api/food-logs/paciente/{id}/calorias` | Total de calorias do paciente em uma data. |
+| `POST` | `/api/food-logs/paciente/{id}` | Registrar novo consumo (Preset, Custom ou Direto). |
+| `DELETE` | `/api/food-logs/{id}` | Remover um registro de consumo. |
+
+### 🍴 Refeições Pré-definidas (Presets)
+| Método | Endpoint | Descrição |
+| :--- | :--- | :--- |
+| `GET` | `/api/meals` | Listar todos os presets de refeição. |
+| `POST` | `/api/meals` | Criar novo preset com múltiplos alimentos. |
+| `GET` | `/api/meals/{id}` | Detalhes de um preset de refeição. |
+
+---
+
+## 📊 Modelos de Dados (Entidades)
+
+### 🧬 Diagrama de Entidade e Relacionamento (ER)
 
 ```mermaid
 erDiagram
-    PACIENTE ||--o{ DIET_PLAN : "has"
-    DIET_PLAN ||--o{ PLANNED_MEAL : "contains"
-    PLANNED_MEAL ||--o| MEAL : "uses preset"
-    PLANNED_MEAL ||--o{ FOOD_LOG : "recorded as"
-    FOOD_LOG ||--|| FOOD : "references"
-    MEAL ||--o{ MEAL_ITEM : "composed of"
-    MEAL_ITEM ||--|| FOOD : "references"
+    PACIENTE ||--o{ DIET_PLAN : "possui"
+    PACIENTE ||--o{ MEAL : "cria"
+    PACIENTE ||--o{ FOOD_LOG : "registra"
+    DIET_PLAN ||--o{ PLANNED_MEAL : "contém"
+    PLANNED_MEAL }o--|| MEAL : "utiliza"
+    MEAL ||--o{ MEAL_ITEM : "composto por"
+    MEAL_ITEM }o--|| FOOD : "referencia"
+    FOOD_LOG }o--|| MEAL : "origina de"
+    FOOD_LOG }o--|| FOOD : "referencia"
 ```
 
 ---
 
-## 🚀 External Food API Integration: FoodData Central
+## 🗂️ Diagrama UML de Classes
 
-The system now integrates with the **FoodData Central API (USDA)** to provide a vast database of nutritional information.
+Diagrama completo com todos os atributos, tipos e relacionamentos entre as 8 entidades de domínio e o modelo de segurança.
 
-### 🔄 Implementation Details
-- **Provider**: FoodData Central (USDA)
-- **Technology**: Spring WebClient (Reactive)
-- **Package**: `com.careplus.external.fooddata`
-- **Logic**: 
-    1. The system searches the local database first.
-    2. If less than 5 matches are found, it queries the FoodData Central API.
-    3. Results from the API are automatically mapped to the `Food` entity and cached in the local MySQL database.
-    4. Duplicates are prevented by checking the `fdc_id`.
+![Diagrama UML de Classes — Care Plus](uml-classes.png)
 
-### 🛠️ Configuration
-Required property in `application.properties`:
+```mermaid
+classDiagram
+    direction TB
+
+    class Paciente {
+        +Long id
+        +String nome
+        +String cpf
+        +String email
+        +String telefone
+        +LocalDate dataNascimento
+        +String convenio
+        +LocalDateTime createdAt
+        +LocalDateTime updatedAt
+    }
+
+    class Usuario {
+        +Long id
+        +String email
+        +String senha
+        +LocalDateTime ultimoAcesso
+        +LocalDateTime tokenExpiracao
+        +Boolean sessaoAtiva
+        +LocalDateTime createdAt
+        +LocalDateTime updatedAt
+        +getAuthorities() Collection
+        +getPassword() String
+        +getUsername() String
+        +isEnabled() boolean
+    }
+
+    class Food {
+        +Long id
+        +String name
+        +Integer caloriesPer100g
+        +Double proteins
+        +Double carbs
+        +Double fats
+        +Double fiber
+        +Double sodium
+        +Double sugar
+        +Double servingSize
+        +String servingUnit
+        +Long fdcId
+        +String source
+    }
+
+    class DietPlan {
+        +Long id
+        +LocalDate startDate
+        +LocalDate endDate
+        +Integer targetCalories
+        +Double targetProteins
+        +Double targetCarbs
+        +Double targetFats
+        +LocalDateTime createdAt
+        +LocalDateTime updatedAt
+        +onCreate()
+        +onUpdate()
+    }
+
+    class Meal {
+        +Long id
+        +String name
+        +LocalDateTime mealDate
+        +Integer totalCalories
+        +Double totalProteins
+        +Double totalCarbs
+        +Double totalFats
+        +Boolean isPreset
+        +String presetName
+        +LocalDateTime createdAt
+        +LocalDateTime updatedAt
+        +calculateTotals()
+    }
+
+    class MealItem {
+        +Long id
+        +Double quantity
+        +Integer calories
+        +Double proteins
+        +Double carbs
+        +Double fats
+        +Double fiber
+        +Double sodium
+        +Double sugar
+        +calculateNutrients()
+    }
+
+    class PlannedMeal {
+        +Long id
+        +LocalDate plannedDate
+        +String mealType
+        +Boolean isPresetUsed
+        +String presetName
+        +LocalDateTime createdAt
+    }
+
+    class FoodLog {
+        +Long id
+        +Double quantity
+        +LocalDateTime consumedAt
+        +Integer totalCalories
+        +Double totalProteins
+        +Double totalCarbs
+        +Double totalFats
+        +Double totalFiber
+        +Double totalSodium
+        +Double totalSugar
+        +Boolean isPlanned
+        +LocalDateTime createdAt
+        +calculateTotals()
+    }
+
+    class UserDetails {
+        <<interface>>
+        +getAuthorities()
+        +getPassword()
+        +getUsername()
+        +isAccountNonExpired()
+        +isAccountNonLocked()
+        +isCredentialsNonExpired()
+        +isEnabled()
+    }
+
+    %% Implementação de interface Spring Security
+    Usuario ..|> UserDetails : implementa
+
+    %% Associações N-1 (chaves estrangeiras)
+    DietPlan "*" --> "1" Paciente : paciente
+    Meal "*" --> "1" Paciente : paciente
+    FoodLog "*" --> "1" Paciente : paciente
+
+    %% Composição e Agregação
+    DietPlan "1" *-- "0..*" PlannedMeal : refeicoesPlanejadas
+    PlannedMeal "*" --> "1" Meal : refeicao
+    Meal "1" *-- "0..*" MealItem : itens
+    MealItem "*" --> "1" Food : alimento
+    FoodLog "*" --> "1" Meal : refeicao
+    FoodLog "*" --> "1" Food : alimento
+```
+
+---
+
+## 🚀 Integração com API Externa: FoodData Central (USDA)
+
+O sistema integra-se com a **API FoodData Central (USDA)** para fornecer uma vasta base de dados nutricionais confiáveis.
+
+### 🔄 Detalhes da Implementação
+- **Provedor**: FoodData Central (USDA)
+- **Tecnologia**: Spring WebClient (Reativo)
+- **Pacote**: `com.fiap.begin_projetct.service` (FoodService)
+- **Lógica de Busca Híbrida**:
+    1. O sistema consulta primeiro o banco de dados local.
+    2. Se menos de 5 resultados forem encontrados, consulta automaticamente a API do USDA.
+    3. Os resultados da API são mapeados para a entidade `Food` e armazenados em cache no MySQL local.
+    4. Duplicatas são evitadas verificando o campo `fdc_id`.
+
+### 🛠️ Configuração Necessária
+Propriedade obrigatória no `application.properties`:
 ```properties
-fooddata.api.key=YOUR_API_KEY
+fooddata.api.key=SUA_CHAVE_AQUI
 ```
 
 ---
 
-## 🛠️ Technology Stack
+## 🛠️ Stack Tecnológica
 
-- **Language**: Java 17+
-- **Framework**: Spring Boot 3.x
-- **Database**: MySQL 8.0 (configured in `application.properties`)
-- **Security**: Spring Security + JWT
-- **Documentation**: Swagger UI (OpenAPI 3.0)
-- **Build Tool**: Maven
+| Componente | Tecnologia | Versão |
+| :--- | :--- | :--- |
+| Linguagem | Java | 21 |
+| Framework | Spring Boot | 3.4.1 |
+| Banco de Dados | MySQL | 8.0 |
+| Segurança | Spring Security + JWT (auth0) | 4.5.1 |
+| Documentação | Swagger UI / OpenAPI | 3.0 (springdoc 2.7.0) |
+| Migrações de Banco | Flyway | Incluso no Spring Boot 3.x |
+| Ferramenta de Build | Maven | 3.x |
+| Redução de Boilerplate | Lombok | - |
+| HTTP Reativo | Spring WebFlux / WebClient | - |
 
 ---
-*Documentation generated by Antigravity AI.*
+*Documentação gerada por Antigravity AI — atualizada em 07/05/2026.*
