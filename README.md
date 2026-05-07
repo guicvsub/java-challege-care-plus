@@ -271,19 +271,6 @@ src/main/java/com/fiap/begin_projetct/
 
 ---
 
-## 🧪 Testando com Postman
-
-O projeto inclui uma coleção Postman completa:
-
-- **`Care Plus API.postman_collection(FINAL)`** — todos os endpoints configurados
-- **`Care-Plus-Environment.postman_environment.json`** — variáveis de ambiente
-
-Importe os dois arquivos no Postman, selecione o ambiente **Care-Plus-Environment** e execute o login primeiro para obter o token automaticamente.
-
-Consulte o **`POSTMAN-GUIDE.md`** para instruções detalhadas.
-
----
-
 ## 📐 Arquitetura e Diagramas
 
 Consulte o arquivo **`architecture.md`** para:
