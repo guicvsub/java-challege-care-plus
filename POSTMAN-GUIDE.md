@@ -1,4 +1,4 @@
-# Care Plus API - Postman Collection Guide
+# Care Plus API — Guia da Coleção Postman
 
 ## Overview
 
@@ -6,9 +6,9 @@ This guide explains how to use the complete Postman collection for the Care Plus
 
 ## Files Generated
 
-1. **Care-Plus-API-JWT-Complete.postman_collection.json** - Complete collection with all endpoints
-2. **Care-Plus-Environment.postman_environment.json** - Environment variables
-3. **POSTMAN-GUIDE.md** - This documentation file
+1. **Care Plus API.postman_collection(FINAL)** - Coleção completa com todos os endpoints
+2. **Care-Plus-Environment.postman_environment.json** - Variáveis de ambiente
+3. **POSTMAN-GUIDE.md** - Este arquivo de documentação
 
 ## Import Instructions
 
@@ -16,7 +16,7 @@ This guide explains how to use the complete Postman collection for the Care Plus
 1. Open Postman
 2. Click **Import** button
 3. Select **File** tab
-4. Choose `Care-Plus-API-JWT-Complete.postman_collection.json`
+4. Escolha `Care Plus API.postman_collection(FINAL)`
 5. Click **Import**
 
 ### 2. Import Environment
